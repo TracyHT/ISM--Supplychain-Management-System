@@ -1,6 +1,4 @@
-# Warehouse - Intelligent Supply Chain Management System
-
-Warehouse is an innovative supply chain management system developed during a hackathon. It leverages blockchain technology for decentralized payments and incorporates predictive analytics for intelligent inventory management.
+# Intelligent Supply Chain Management System
 
 ## Features
 
@@ -24,19 +22,22 @@ Warehouse is an innovative supply chain management system developed during a hac
 ## Technologies Used
 
 ### Web Application (MERN Stack)
+
 - MongoDB: Database
 - Express.js: Backend framework
 - React: Frontend library
 - Node.js: Runtime environment
 
 ### Blockchain
+
 - Solidity: Smart contract development
 - Foundry: Smart contract development and testing framework
 - Wagmi: React hooks for Ethereum
 - WalletConnect : For connecting wallet
-- Alchemy - Node provider 
+- Alchemy - Node provider
 
 ### Machine Learning
+
 - Flask: Web framework for ML model deployment
 - NumPy: Numerical computing library
 - Scikit-learn: Machine learning library
@@ -44,7 +45,6 @@ Warehouse is an innovative supply chain management system developed during a hac
 - Jupyter Notebook: Interactive development environment
 
 ### Testing
-- Supplier Account: email-888innovations888@gmail.com password-1234
-- Employee account: email-akhil888binoy@gmail.com password-1234
-- Link : https://intelligent-supplychain-management-ndy1.onrender.com/
 
+- Account: a@gmail.com password-123456
+- Link to the original project repository : https://github.com/akhil888binoy/Intelligent-Supplychain-Management-System.git
