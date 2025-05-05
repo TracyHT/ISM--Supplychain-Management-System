@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
 import { Box, Button, Container } from "@mui/material";
-import Navbar from "../navbar";
+import Navbar from "../../components/Navbar";
 import ProductDetailWidget from "../widgets/ProductDetailWidget";
 import { setProduct } from "../../state"; // Ensure correct import path
 

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Box, useMediaQuery, Typography } from "@mui/material";
 import { useSelector } from "react-redux";
-import Navbar from "../navbar";
-import Sidebar from "../../components/Sidebar";
-import ProductsWidget from "../widgets/ProductsWidget";
+import Navbar from "../../../components/Navbar";
+import Sidebar from "../../../components/Sidebar";
+import ProductsWidget from "../../widgets/ProductsWidget";
 
 const Marketplace = () => {
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");

@@ -227,17 +227,7 @@ const ProductsWidget = ({
                 </Button>
               )}
             </Box>
-            {!isBookedProducts && (
-              <Typography
-                mt={"1rem"}
-                fontSize={isNonMobile ? "3rem" : "1rem"}
-                color={Role === "supplier" ? "#834bff" : "primary"}
-              >
-                {Role === "supplier"
-                  ? "Your Products"
-                  : "Products in Inventory"}
-              </Typography>
-            )}
+            {!isBookedProducts}
           </Box>
           {/* Product Listings */}
           <Box>

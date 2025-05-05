@@ -7,15 +7,16 @@ import { createTheme } from "@mui/material/styles";
 import { themeSettings } from "./theme";
 import LoginPage from "./scenes/loginPage";
 import HomePage from "./scenes/homePage";
-import ProfilePage from "./scenes/profilePage";
-import MyProductPage from "./scenes/myProductPage";
+import ProfilePage from "./scenes/supplier/profilePage";
+import MyProductPage from "./scenes/supplier/myProductPage";
+import AddProductPage from "./scenes/supplier/addProductPage";
 import ProductDetail from "./scenes/productDetailPage";
-import EmployeeProfilePage from "./scenes/employeeprofilePage";
-import PaymentPage from "./scenes/paymentPage";
-import PredictionPage from "./scenes/predictionsPage";
+import EmployeeProfilePage from "./scenes/employee/employeeprofilePage";
+import PaymentPage from "./scenes/employee/paymentPage";
+import PredictionPage from "./scenes/employee/predictionsPage";
 import DeletePage from "./scenes/deletePage";
-import Marketplace from "./scenes/marketplace";
-import Inventory from "./scenes/inventory";
+import Marketplace from "./scenes/employee/marketplace";
+import Inventory from "./scenes/employee/inventory";
 function App() {
   const mode = useSelector((state) => state.mode);
   const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
@@ -80,6 +81,12 @@ function App() {
             <Route
               path="/inventory"
               element={isAuth ? <Inventory></Inventory> : <Navigate to="/" />}
+            ></Route>
+            <Route
+              path="/addProduct"
+              element={
+                isAuth ? <AddProductPage></AddProductPage> : <Navigate to="/" />
+              }
             ></Route>
           </Routes>
         </ThemeProvider>

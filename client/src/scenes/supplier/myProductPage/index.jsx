@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Box, useMediaQuery, Typography } from "@mui/material";
 import { useSelector } from "react-redux";
-import Navbar from "../navbar";
-import Sidebar from "../../components/Sidebar";
-import ProductsWidget from "../widgets/ProductsWidget";
+import Navbar from "../../../components/Navbar";
+import Sidebar from "../../../components/Sidebar";
+import ProductsWidget from "../../widgets/ProductsWidget";
 
-const Inventory = () => {
+const MyProduct = () => {
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
   const { _id } = useSelector((state) => state.user);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -22,24 +22,28 @@ const Inventory = () => {
         <Box
           sx={{
             flexGrow: 1,
-            marginTop: "64px",
+            marginTop: "100px",
             marginLeft: isNonMobileScreens ? "250px" : 0,
             padding: "2rem 6%",
           }}
         >
           <Typography
             variant="h1"
-            color="primary"
+            color="#834bff"
             mb="2rem"
             fontWeight={"bold"}
           >
-            Inventory
+            Your Products
           </Typography>
-          <ProductsWidget userId={_id} defaultStatus="Inventory" />
+          <ProductsWidget
+            userId={_id}
+            isProfile={true}
+            defaultStatus="Marketplace"
+          />
         </Box>
       </Box>
     </Box>
   );
 };
 
-export default Inventory;
+export default MyProduct;

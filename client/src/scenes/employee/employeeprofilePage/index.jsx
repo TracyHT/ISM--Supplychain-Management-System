@@ -2,11 +2,11 @@ import { Box, useMediaQuery } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import Navbar from "../navbar";
-import UserWidget from "../widgets/UserWidget";
+import Navbar from "../../../components/navbar";
+import UserWidget from "../../widgets/UserWidget";
 
 import { Typography } from "@mui/material";
-import ProductsWidget from "../widgets/ProductsWidget";
+import ProductsWidget from "../../widgets/ProductsWidget";
 
 const EmployeeProfilePage = () => {
   const [user, setUser] = useState(null);

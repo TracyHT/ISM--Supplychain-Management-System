@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Box, useMediaQuery, Typography, Button } from "@mui/material";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import Navbar from "../navbar";
+import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
 
 const HomePage = () => {
@@ -107,7 +107,7 @@ const HomePage = () => {
 
                   {/* Supplier Quick Actions */}
                   <Box display="flex" gap={5}>
-                    <Link to="/myproduct">
+                    <Link to="/addProduct">
                       <Button
                         variant="outlined"
                         size="large"

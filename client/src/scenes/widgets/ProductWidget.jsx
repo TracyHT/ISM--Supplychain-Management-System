@@ -15,11 +15,11 @@ const LabelValue = ({ label, value }) => (
       width: "100%",
     }}
   >
-    <Typography color="white" variant="subtitle1" fontWeight="500">
+    <Typography color="text.primary" variant="subtitle1" fontWeight="500">
       {label} :
     </Typography>
     <Typography
-      color="white"
+      color="text.primary"
       variant="body1"
       fontSize="1.2rem"
       fontWeight="bold"
@@ -85,7 +85,7 @@ const ProductWidget = ({
           size="medium"
           sx={{
             bgcolor: "#023d4f",
-            color: "white",
+            color: "text.primary",
             fontSize: "1rem",
             fontWeight: "semibold",
             height: "28px",
@@ -93,11 +93,15 @@ const ProductWidget = ({
           }}
         />
       </Box>
-      <Box my={2}>
-        <Typography color="white" variant="h2" fontWeight="bold">
+      <Box my={3}>
+        <Typography color="text.primary" variant="h2" fontWeight="bold">
           {name}
         </Typography>
-        <Typography color="white" variant="h5" sx={{ my: 1, opacity: 0.8 }}>
+        <Typography
+          color="text.primary"
+          variant="h5"
+          sx={{ my: 1, opacity: 0.8 }}
+        >
           {description}
         </Typography>
       </Box>
@@ -144,7 +148,7 @@ const ProductWidget = ({
               boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.2)",
             }}
           >
-            <Typography color="white" variant="subtitle1">
+            <Typography color="text.primary" variant="subtitle1">
               {bookingCount} Bookings
             </Typography>
           </Box>
@@ -175,7 +179,7 @@ const ProductWidget = ({
           onClick={handleViewDetails}
         >
           <Typography
-            color="white"
+            color="text.primary"
             fontSize={isNonMobileScreens ? "1rem" : "0.8rem"}
           >
             DETAILS
