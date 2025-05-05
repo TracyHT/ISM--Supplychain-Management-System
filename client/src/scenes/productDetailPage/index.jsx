@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
-import { Box } from "@mui/material";
+import { useParams, useNavigate } from "react-router-dom";
+import { Box, Button, Container } from "@mui/material";
 import Navbar from "../navbar";
 import ProductDetailWidget from "../widgets/ProductDetailWidget";
 import { setProduct } from "../../state"; // Ensure correct import path
 
 const ProductDetail = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate(); // Add useNavigate hook for the back button
   const { productId } = useParams();
   const token = useSelector((state) => state.token);
   const products = useSelector((state) => state.products.products);
 
-  // Find the ride in the state using rideId
+  // Find the product in the state using productId
   const currentProduct = products.find((product) => product._id === productId);
 
   const getProduct = async () => {
@@ -29,29 +30,54 @@ const ProductDetail = () => {
 
   useEffect(() => {
     getProduct();
-  }, [productId]); // Fetch ride data whenever rideId changes
+  }, [productId]); // Fetch product data whenever productId changes
 
   return (
     <Box>
       <Navbar />
-      <Box>
-        {currentProduct && (
-          <ProductDetailWidget
-            productId={currentProduct._id}
-            productUserId={currentProduct.userId}
-            name={currentProduct.name}
-            description={currentProduct.description}
-            price={currentProduct.price}
-            quantity={currentProduct.quantity}
-            minQuantity={currentProduct.minQuantity}
-            reorderPoint={currentProduct.reorderPoint}
-            maxQuantity={currentProduct.maxQuantity}
-            status={currentProduct.status}
-            category={currentProduct.category}
-            bookings={currentProduct.bookings}
-          />
-        )}
-      </Box>
+      <Container maxWidth="xl" sx={{ pt: 12, pb: 8 }}>
+        {/* Back button */}
+        <Button
+          variant="outlined"
+          onClick={() => navigate(-1)}
+          sx={{
+            mb: 4,
+            fontSize: "1rem",
+            px: 2,
+            py: 1,
+            borderRadius: "8px",
+            fontWeight: "bold",
+          }}
+        >
+          ← Back
+        </Button>
+
+        {/* Product detail widget */}
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: "1200px",
+            mx: "auto", // Center the widget
+          }}
+        >
+          {currentProduct && (
+            <ProductDetailWidget
+              productId={currentProduct._id}
+              productUserId={currentProduct.userId}
+              name={currentProduct.name}
+              description={currentProduct.description}
+              price={currentProduct.price}
+              quantity={currentProduct.quantity}
+              minQuantity={currentProduct.minQuantity}
+              reorderPoint={currentProduct.reorderPoint}
+              maxQuantity={currentProduct.maxQuantity}
+              status={currentProduct.status}
+              category={currentProduct.category}
+              bookings={currentProduct.bookings}
+            />
+          )}
+        </Box>
+      </Container>
     </Box>
   );
 };

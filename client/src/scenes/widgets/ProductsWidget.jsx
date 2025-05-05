@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setProducts } from "../../state";
-import { Typography, Button, CircularProgress } from "@mui/material";
+import { Typography, Button, CircularProgress, Grid } from "@mui/material";
 import Search from "../../components/Search";
 import Sort from "../../components/Sort";
 import Category from "../../components/Category";
@@ -29,9 +29,7 @@ const ProductsWidget = ({
   const [filterCategory, setFilterCategory] = useState(
     JSON.parse(localStorage.getItem("productFilterCategory")) || []
   );
-  const [filterStatus] = useState(
-    defaultStatus ? [defaultStatus] : [] // Fixed status, not modifiable by user
-  );
+  const [filterStatus] = useState(defaultStatus ? [defaultStatus] : []);
   const [filterName, setFilterName] = useState(
     JSON.parse(localStorage.getItem("productFilterName")) || ""
   );
@@ -48,7 +46,6 @@ const ProductsWidget = ({
     setPage(1);
     localStorage.removeItem("productFilterCategory");
     localStorage.removeItem("productFilterName");
-    // Note: filterStatus is not reset since it's fixed to defaultStatus
     localStorage.removeItem("productFilterStatus"); // Remove stored status since it's now controlled by defaultStatus
   };
 
@@ -244,40 +241,43 @@ const ProductsWidget = ({
           </Box>
           {/* Product Listings */}
           <Box>
-            {Array.isArray(products.products) &&
-              products.products.map(
-                ({
-                  _id,
-                  userId,
-                  name,
-                  description,
-                  price,
-                  quantity,
-                  minQuantity,
-                  reorderPoint,
-                  maxQuantity,
-                  category,
-                  status,
-                  bookings,
-                }) => (
-                  <ProductWidget
-                    key={_id}
-                    productId={_id}
-                    productUserId={userId}
-                    name={name}
-                    description={description}
-                    price={price}
-                    quantity={quantity}
-                    minQuantity={minQuantity}
-                    reorderPoint={reorderPoint}
-                    maxQuantity={maxQuantity}
-                    status={status}
-                    category={category}
-                    bookings={bookings}
-                  />
-                )
-              )}
-            <Box display={"flex"} justifyContent={"center"}>
+            <Grid container spacing={3} mt={2}>
+              {Array.isArray(products.products) &&
+                products.products.map(
+                  ({
+                    _id,
+                    userId,
+                    name,
+                    description,
+                    price,
+                    quantity,
+                    minQuantity,
+                    reorderPoint,
+                    maxQuantity,
+                    category,
+                    status,
+                    bookings,
+                  }) => (
+                    <Grid item xs={12} sm={6} key={_id}>
+                      <ProductWidget
+                        productId={_id}
+                        productUserId={userId}
+                        name={name}
+                        description={description}
+                        price={price}
+                        quantity={quantity}
+                        minQuantity={minQuantity}
+                        reorderPoint={reorderPoint}
+                        maxQuantity={maxQuantity}
+                        status={status}
+                        category={category}
+                        bookings={bookings}
+                      />
+                    </Grid>
+                  )
+                )}
+            </Grid>
+            <Box display={"flex"} justifyContent={"center"} mt={4}>
               <CustomPagination
                 page={page}
                 limit={products.limit ? products.limit : 0}

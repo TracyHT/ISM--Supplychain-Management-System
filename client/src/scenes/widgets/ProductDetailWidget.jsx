@@ -33,13 +33,11 @@ const ProductDetailWidget = ({
   const bookingCount = Object.keys(bookings).length;
   const userIds = Object.keys(bookings);
 
-  // Function to handle edit button click
+  // Function to handle payment button click
   const payProduct = () => {
-    // Redirect to edit form with event ID as URL parameter
     navigate(`/pay`);
   };
 
-  console.log(productId);
   const patchProduct = async () => {
     const response = await fetch(
       `http://localhost:6001/products/${productId}/booking`,
@@ -64,13 +62,15 @@ const ProductDetailWidget = ({
 
   return (
     <Box
-      padding={"1.5rem 1.5rem 0.75rem 1.5rem"}
-      gap={"5rem"}
-      display={isNonMobileScreens ? "flex" : "block"}
+      width="100%"
+      display="flex"
+      justifyContent="center"
+      flexDirection={isNonMobileScreens ? "row" : "column"}
+      gap="2rem"
+      padding="1rem"
     >
       <WidgetWrapper
-        mt="2rem"
-        width={isNonMobileScreens ? "60%" : "100%"}
+        width={isNonMobileScreens ? "800px" : "100%"}
         p="2rem"
         backgroundColor="#1a1a1a"
         borderRadius="1.5rem"
@@ -80,13 +80,13 @@ const ProductDetailWidget = ({
           display="flex"
           justifyContent="center"
           alignItems="center"
-          gap={isNonMobileScreens ? "2rem" : "1rem"}
-          mb="1rem"
+          mb="2rem"
         >
           <Typography
             fontSize={isNonMobileScreens ? "3rem" : "2rem"}
             color={role === "employee" ? "primary" : "#834bff"}
             fontWeight="bold"
+            textAlign="center"
           >
             Product Details
           </Typography>
@@ -100,14 +100,18 @@ const ProductDetailWidget = ({
               backgroundColor: "#2a2a2a",
               marginBottom: "1rem",
             }}
-            display={"flex"}
-            alignItems={"center"}
+            display="flex"
+            alignItems="center"
           >
-            <Typography color="white" variant="subtitle1" ml="0.3rem">
+            <Typography
+              color="white"
+              variant="subtitle1"
+              width="180px"
+              fontWeight="500"
+            >
               Product Name:
             </Typography>
             <Typography
-              ml="0.5rem"
               color="white"
               variant="h6"
               fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
@@ -124,14 +128,18 @@ const ProductDetailWidget = ({
               backgroundColor: "#2a2a2a",
               marginBottom: "1rem",
             }}
-            display={"flex"}
-            alignItems={"center"}
+            display="flex"
+            alignItems="center"
           >
-            <Typography color="white" variant="subtitle1" ml="0.3rem">
+            <Typography
+              color="white"
+              variant="subtitle1"
+              width="180px"
+              fontWeight="500"
+            >
               Description:
             </Typography>
             <Typography
-              ml="0.5rem"
               color="white"
               variant="h6"
               fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
@@ -148,14 +156,18 @@ const ProductDetailWidget = ({
               backgroundColor: "#2a2a2a",
               marginBottom: "1rem",
             }}
-            display={"flex"}
-            alignItems={"center"}
+            display="flex"
+            alignItems="center"
           >
-            <Typography color="white" variant="subtitle1" ml="0.3rem">
+            <Typography
+              color="white"
+              variant="subtitle1"
+              width="180px"
+              fontWeight="500"
+            >
               Price:
             </Typography>
             <Typography
-              ml="0.5rem"
               color="white"
               variant="h6"
               fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
@@ -172,14 +184,18 @@ const ProductDetailWidget = ({
               backgroundColor: "#2a2a2a",
               marginBottom: "1rem",
             }}
-            display={"flex"}
-            alignItems={"center"}
+            display="flex"
+            alignItems="center"
           >
-            <Typography color="white" variant="subtitle1" ml="0.3rem">
+            <Typography
+              color="white"
+              variant="subtitle1"
+              width="180px"
+              fontWeight="500"
+            >
               Quantity:
             </Typography>
             <Typography
-              ml="0.5rem"
               color="white"
               variant="h6"
               fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
@@ -198,14 +214,18 @@ const ProductDetailWidget = ({
                   backgroundColor: "#2a2a2a",
                   marginBottom: "1rem",
                 }}
-                display={"flex"}
-                alignItems={"center"}
+                display="flex"
+                alignItems="center"
               >
-                <Typography color="white" variant="subtitle1" ml="0.3rem">
+                <Typography
+                  color="white"
+                  variant="subtitle1"
+                  width="180px"
+                  fontWeight="500"
+                >
                   Minimum Quantity:
                 </Typography>
                 <Typography
-                  ml="0.5rem"
                   color="white"
                   variant="h6"
                   fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
@@ -222,14 +242,18 @@ const ProductDetailWidget = ({
                   backgroundColor: "#2a2a2a",
                   marginBottom: "1rem",
                 }}
-                display={"flex"}
-                alignItems={"center"}
+                display="flex"
+                alignItems="center"
               >
-                <Typography color="white" variant="subtitle1" ml="0.3rem">
+                <Typography
+                  color="white"
+                  variant="subtitle1"
+                  width="180px"
+                  fontWeight="500"
+                >
                   Reorder Point:
                 </Typography>
                 <Typography
-                  ml="0.5rem"
                   color="white"
                   variant="h6"
                   fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
@@ -246,14 +270,18 @@ const ProductDetailWidget = ({
                   backgroundColor: "#2a2a2a",
                   marginBottom: "1rem",
                 }}
-                display={"flex"}
-                alignItems={"center"}
+                display="flex"
+                alignItems="center"
               >
-                <Typography color="white" variant="subtitle1" ml="0.3rem">
+                <Typography
+                  color="white"
+                  variant="subtitle1"
+                  width="180px"
+                  fontWeight="500"
+                >
                   Maximum Quantity:
                 </Typography>
                 <Typography
-                  ml="0.5rem"
                   color="white"
                   variant="h6"
                   fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
@@ -272,14 +300,18 @@ const ProductDetailWidget = ({
               backgroundColor: "#2a2a2a",
               marginBottom: "1rem",
             }}
-            display={"flex"}
-            alignItems={"center"}
+            display="flex"
+            alignItems="center"
           >
-            <Typography color="white" variant="subtitle1" ml="0.3rem">
+            <Typography
+              color="white"
+              variant="subtitle1"
+              width="180px"
+              fontWeight="500"
+            >
               Category:
             </Typography>
             <Typography
-              ml="0.5rem"
               color="white"
               variant="h6"
               fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
@@ -291,7 +323,7 @@ const ProductDetailWidget = ({
         </Box>
 
         {role === "employee" && status === "Marketplace" && (
-          <FlexBetween gap="0.3rem" mt="2rem">
+          <Box display="flex" justifyContent="center" gap="1rem" mt="2rem">
             <Button
               onClick={patchProduct}
               variant={isBooked ? "contained" : "outlined"}
@@ -316,7 +348,7 @@ const ProductDetailWidget = ({
             >
               Pay
             </Button>
-          </FlexBetween>
+          </Box>
         )}
 
         {role === "supplier" && status === "Marketplace" && (
@@ -344,28 +376,24 @@ const ProductDetailWidget = ({
         )}
       </WidgetWrapper>
 
-      <Box>
-        {role === "supplier" && (
-          <>
-            <Typography
-              mt={"1rem"}
-              fontSize={isNonMobileScreens ? "2rem" : "1.5rem"}
-              color={"#834bff"}
-            >
-              {" "}
-              Ordered this Product :{" "}
-            </Typography>
+      {role === "supplier" && userIds.length > 0 && (
+        <Box width={isNonMobileScreens ? "400px" : "100%"}>
+          <Typography
+            textAlign="center"
+            fontSize={isNonMobileScreens ? "2rem" : "1.5rem"}
+            color={"#834bff"}
+            fontWeight="bold"
+            mb="1rem"
+          >
+            Ordered this Product
+          </Typography>
+          <Box display="flex" flexDirection="column" gap="1rem">
             {userIds.map((userId) => (
-              <Box key={userId} mt={"1rem"}>
-                <BookedUserWidget
-                  key={userId}
-                  userId={userId}
-                ></BookedUserWidget>
-              </Box>
+              <BookedUserWidget key={userId} userId={userId} />
             ))}
-          </>
-        )}
-      </Box>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 };
