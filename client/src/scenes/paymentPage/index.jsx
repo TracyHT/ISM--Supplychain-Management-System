@@ -129,7 +129,7 @@ const PaymentPage = () => {
     setWithdrawAmountInETH("");
   }
 
-  if (!isConnected) {
+  if (isConnected) {
     return (
       <>
         <Navbar></Navbar>
