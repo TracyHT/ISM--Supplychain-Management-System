@@ -47,7 +47,7 @@ export const createProduct = async (req, res) => {
 export const getFeedProducts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) - 1 || 0;
-    const limit = parseInt(req.query.limit) || 5;
+    const limit = parseInt(req.query.limit) || 6;
     const search = req.query.search || "";
     let sort = req.query.sort || "quantity";
     let category = req.query.category || "All";
@@ -134,7 +134,7 @@ export const getUserProducts = async (req, res) => {
     const categoryOptions = await Product.distinct("category");
 
     const page = parseInt(req.query.page) - 1 || 0;
-    const limit = parseInt(req.query.limit) || 5;
+    const limit = parseInt(req.query.limit) || 6;
     const search = req.query.search || "";
     let sort = req.query.sort || "quantity";
     let category = req.query.category || "All";
@@ -290,7 +290,7 @@ export const getBookedProducts = async (req, res) => {
     const { userId } = req.params;
 
     const page = parseInt(req.query.page, 10) - 1 || 0;
-    const limit = parseInt(req.query.limit, 10) || 5;
+    const limit = parseInt(req.query.limit, 10) || 6;
     const search = req.query.search || "";
     let sort = req.query.sort || "quantity";
     let category = req.query.category || "All";

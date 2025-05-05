@@ -3,7 +3,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useEffect, useState } from "react";
 import { formatEther } from "viem/utils";
 import { parseEther } from "viem";
-import { PaymentABI, PaymentAddress } from "../../constants";
+import { PaymentABI, PaymentAddress } from "../../../constants";
 import {
   Container,
   Box,
@@ -25,7 +25,7 @@ import {
   useWaitForTransactionReceipt,
   useSendTransaction,
 } from "wagmi";
-import Navbar from "../navbar";
+import Navbar from "../../../components/Navbar";
 
 const PaymentPage = () => {
   const { address, isConnected } = useAccount();

@@ -54,6 +54,7 @@ const Sidebar = ({ open, onClose }) => {
     {
       text: "Sale Prediction",
       icon: <ShoppingBagIcon />,
+      path: "/prediction",
       visible: role === "employee",
     },
     {

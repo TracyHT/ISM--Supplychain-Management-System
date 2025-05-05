@@ -29,7 +29,7 @@ import FlexBetween from "../../components/FlexBetween";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
-const MyProductWidget = ({ picturePath }) => {
+const AddProductWidget = ({ picturePath }) => {
   const dispatch = useDispatch();
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [name, setName] = useState("");
@@ -334,4 +334,4 @@ const MyProductWidget = ({ picturePath }) => {
   );
 };
 
-export default MyProductWidget;
+export default AddProductWidget;
