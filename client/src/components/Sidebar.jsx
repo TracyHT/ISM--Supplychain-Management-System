@@ -34,12 +34,6 @@ const Sidebar = ({ open, onClose }) => {
       visible: true,
     },
     {
-      text: "Profile",
-      icon: <PersonIcon />,
-      path: "/profile",
-      visible: true,
-    },
-    {
       text: "Marketplace",
       icon: <StoreIcon />,
       path: "/marketplace",
@@ -61,6 +55,12 @@ const Sidebar = ({ open, onClose }) => {
       text: "Sale Prediction",
       icon: <ShoppingBagIcon />,
       visible: role === "employee",
+    },
+    {
+      text: "Profile",
+      icon: <PersonIcon />,
+      path: "/profile",
+      visible: true,
     },
   ];
 

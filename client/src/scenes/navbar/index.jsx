@@ -49,7 +49,7 @@ const Navbar = ({ toggleSidebar }) => {
         top: 0,
         left: 0,
         right: 0,
-        zIndex: 1000, // Ensure navbar is above other content
+        zIndex: 1000,
         backgroundColor: alt,
       }}
     >
@@ -60,20 +60,6 @@ const Navbar = ({ toggleSidebar }) => {
               <Menu />
             </IconButton>
           )}
-          <Typography
-            fontWeight="bold"
-            fontSize="clamp(1rem, 2rem, 2.25rem)"
-            color={role === "employee" ? "primary" : "#834bff"}
-            onClick={() => navigate("/home")}
-            sx={{
-              "&:hover": {
-                color: primaryLight,
-                cursor: "pointer",
-              },
-            }}
-          >
-            Warehouse
-          </Typography>
           {isNonMobileScreens && (
             <FlexBetween
               backgroundColor={neutralLight}
