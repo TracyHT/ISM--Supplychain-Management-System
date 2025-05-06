@@ -55,7 +55,12 @@ const HomePage = () => {
               flexBasis={isNonMobileScreens ? "100%" : undefined} // Adjusted to use full width
               mt={isNonMobileScreens ? undefined : "2rem"}
             >
-              <Typography variant="h1" color="primary" mb="1rem">
+              <Typography
+                variant="h1"
+                color="primary"
+                mb="1rem"
+                fontWeight={"bold"}
+              >
                 Welcome, {firstName}!
               </Typography>
 
