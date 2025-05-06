@@ -19,7 +19,7 @@ const PredictionPage = () => {
             };
 
             for (let month = 0; month < 12; month++) {
-                const response = await fetch(`https://sparkathon24.pankajkush.club/predictMonthly?month=${month + 1}&year=${year}`, {
+                const response = await fetch(`http://localhost:5000/predictMonthly?month=${month + 1}&year=${year}`, {
                     method: "GET",
                 });
 
