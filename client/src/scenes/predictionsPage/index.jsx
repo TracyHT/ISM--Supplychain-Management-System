@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import SalesLineChart from '../../components/SalesLineChart';
 import { Box, CircularProgress, TextField, Typography } from '@mui/material';
 import Navbar from '../../scenes/navbar';
@@ -8,7 +8,7 @@ const PredictionPage = () => {
     const [year, setYear] = useState(2000);
     const [loading, setLoading] = useState(true);
 
-    const getPredictionsMonthly = async () => {
+    const getPredictionsMonthly = useCallback(async () => {
         try {
             setLoading(true); // Start loading
             const monthlySales = {
@@ -44,11 +44,11 @@ const PredictionPage = () => {
             console.error("Error fetching predictions", error);
             setLoading(false); // End loading even if there's an error
         }
-    };
+    }, [year]);
 
     useEffect(() => {
         getPredictionsMonthly();
-    }, [year]);
+    }, [year, getPredictionsMonthly]);
 
     return (
         <Box height={"500px"}>
