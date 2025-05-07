@@ -1,14 +1,11 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import joblib
-from sklearn.ensemble import RandomForestRegressor
 import pandas as pd
 import numpy as np
 
-
 app = Flask(__name__)
 CORS(app)
-
 
 @app.route('/predictMonthly', methods=['GET', 'POST'])
 def monthlyPrediction():
@@ -21,7 +18,7 @@ def monthlyPrediction():
     X_test = pd.DataFrame(np.array([year, month]).reshape(1, -1), columns=["Year", "Month"])
     
     # Load the model
-    loaded_model = joblib.load("sparkathon-randomforest-monthly.pkl")
+    loaded_model = joblib.load("../models/randomforest-monthly.pkl")
     
     # Make predictions
     y_pred = loaded_model.predict(X_test)
