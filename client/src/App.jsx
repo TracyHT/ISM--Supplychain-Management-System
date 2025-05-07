@@ -10,7 +10,6 @@ import HomePage from "./scenes/homePage";
 import MyProductPage from "./scenes/supplier/myProductPage";
 import AddProductPage from "./scenes/supplier/addProductPage";
 import ProductDetail from "./scenes/productDetailPage";
-import EmployeeProfilePage from "./scenes/employee/employeeprofilePage";
 import PaymentPage from "./scenes/employee/paymentPage";
 import PredictionPage from "./scenes/employee/predictionsPage";
 import DeletePage from "./scenes/deletePage";
@@ -34,16 +33,7 @@ function App() {
               path="/home"
               element={isAuth ? <HomePage /> : <Navigate to="/" />}
             />
-            <Route
-              path="/employee/:userId"
-              element={
-                isAuth ? (
-                  <EmployeeProfilePage></EmployeeProfilePage>
-                ) : (
-                  <Navigate to="/" />
-                )
-              }
-            ></Route>
+
             <Route
               path="/myproduct"
               element={

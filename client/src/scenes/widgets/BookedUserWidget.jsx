@@ -35,7 +35,6 @@ const BookedUserWidget = ({ userId }) => {
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
 
   const token = useSelector((state) => state.token);
-  const Role = useSelector((state) => state.user.role);
   const loggedInUserId = useSelector((state) => state.user._id); // Assuming you have a way to get the logged-in user's ID
   const dark = palette.neutral.dark;
   const medium = palette.neutral.medium;
@@ -89,63 +88,46 @@ const BookedUserWidget = ({ userId }) => {
     });
   };
 
-  const {
-    firstName,
-    lastName,
-    picturePath,
-    role,
-    email,
-    employeeId,
-    phoneNumber,
-  } = user;
+  const { firstName, lastName, role, email, phoneNumber } = user;
 
   return (
     <WidgetWrapper width={isNonMobileScreens ? "90%" : "100%"}>
       {/* FIRST ROW */}
-      <FlexBetween
-        gap="0.5rem"
-        pb="1.1rem"
-        onClick={
-          Role === "employee" ? () => navigate(`/employee/${userId}`) : ""
-        }
-      >
-        <FlexBetween gap="1rem">
-          <UserImage image={picturePath} />
-          <Box>
-            {!editMode ? ( // Display editable fields only if not in edit mode and if the logged-in user is viewing their own profile
-              <>
-                <Typography
-                  variant="h4"
-                  color={dark}
-                  fontWeight="500"
-                  sx={{
-                    "&:hover": {
-                      color: palette.primary.light,
-                      cursor: "pointer",
-                    },
-                  }}
-                >
-                  {firstName} {lastName}
-                </Typography>
-              </>
-            ) : (
-              <>
-                <TextField
-                  name="firstName"
-                  label="First Name"
-                  value={firstName}
-                  onChange={handleChange}
-                />
-                <TextField
-                  name="lastName"
-                  label="Last Name"
-                  value={lastName}
-                  onChange={handleChange}
-                />
-              </>
-            )}
-          </Box>
-        </FlexBetween>
+      <FlexBetween gap="0.5rem" pb="1.1rem">
+        <Box>
+          {!editMode ? ( // Display editable fields only if not in edit mode and if the logged-in user is viewing their own profile
+            <>
+              <Typography
+                variant="h4"
+                color={dark}
+                fontWeight="500"
+                sx={{
+                  "&:hover": {
+                    color: palette.primary.light,
+                    cursor: "pointer",
+                  },
+                }}
+              >
+                {firstName} {lastName}
+              </Typography>
+            </>
+          ) : (
+            <>
+              <TextField
+                name="firstName"
+                label="First Name"
+                value={firstName}
+                onChange={handleChange}
+              />
+              <TextField
+                name="lastName"
+                label="Last Name"
+                value={lastName}
+                onChange={handleChange}
+              />
+            </>
+          )}
+        </Box>
         {userId === loggedInUserId &&
           !editMode && ( // Display edit button only if the logged-in user is viewing their own profile and if not in edit mode
             <ManageAccountsOutlined onClick={handleEdit} />
@@ -161,11 +143,6 @@ const BookedUserWidget = ({ userId }) => {
 
       {/* SECOND ROW */}
       <Box p="1rem 0">
-        <Box display="flex" alignItems="center" gap="1rem" mb="0.5rem">
-          <AccountCircle fontSize="large" sx={{ color: main }}></AccountCircle>
-
-          <Typography color={medium}>{role}</Typography>
-        </Box>
         <Box display="flex" alignItems="center" gap="1rem" mb="0.5rem">
           <PhoneOutlined fontSize="large" sx={{ color: main }} />
           {!editMode ? (
@@ -188,20 +165,6 @@ const BookedUserWidget = ({ userId }) => {
               name="email"
               label="Email"
               value={email}
-              onChange={handleChange}
-            />
-          )}
-        </Box>
-
-        <Box display="flex" alignItems="center" gap="1rem" mb="0.5rem">
-          <Fingerprint fontSize="large" sx={{ color: main }}></Fingerprint>
-          {!editMode ? (
-            <Typography color={medium}>{employeeId}</Typography>
-          ) : (
-            <TextField
-              name="employeeId"
-              label="Employee Id"
-              value={employeeId}
               onChange={handleChange}
             />
           )}
