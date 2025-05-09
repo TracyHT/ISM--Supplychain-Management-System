@@ -18,6 +18,7 @@ import { register } from "./controllers/auth.js";
 import { verifyToken } from "./middleware/auth.js";
 import { createProduct } from "./controllers/products.js";
 import productRoutes from "./routes/products.js";
+import inventoryRoutes from "./routes/inventory.js";
 
 /*CONFIGURATION*/
 const __filename = fileURLToPath(import.meta.url);
@@ -51,6 +52,7 @@ app.post("/products", upload.single("picture"), verifyToken, createProduct);
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/products", productRoutes);
+app.use("/inventory", inventoryRoutes);
 
 /* MONGOOSE SETUP*/
 const PORT = process.env.PORT || 6001;

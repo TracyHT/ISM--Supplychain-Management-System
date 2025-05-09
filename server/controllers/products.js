@@ -34,7 +34,7 @@ export const createProduct = async (req, res) => {
     await newProduct.save();
     console.log("Saved Product");
 
-    const product = await Product.find(); //grabs all the Products and display it on frontend
+    const product = await Product.find();
     res.status(201).json(product);
   } catch (err) {
     console.error(err.stack);

@@ -39,9 +39,9 @@ const ProductWidget = ({
   minQuantity,
   reorderPoint,
   maxQuantity,
-  status,
   category,
   bookings,
+  defaultStatus,
 }) => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.token);
@@ -54,6 +54,7 @@ const ProductWidget = ({
   const isOwner = loggedInUserId === productUserId;
   const isSupplier = role === "supplier";
   const isEmployee = role === "employee";
+  const isInventory = defaultStatus === "Inventory";
 
   const handleViewDetails = () => navigate(`/products/${productId}/product`);
 
@@ -117,13 +118,6 @@ const ProductWidget = ({
         <Grid item xs={12} sm={6}>
           <LabelValue label="Quantity" value={quantity} />
         </Grid>
-
-        {/* Status - Only for employees */}
-        {isEmployee && (
-          <Grid item xs={12} sm={6}>
-            <LabelValue label="Status" value={status} />
-          </Grid>
-        )}
 
         {/* Reorder Point - Only if available */}
         {reorderPoint != null && (
