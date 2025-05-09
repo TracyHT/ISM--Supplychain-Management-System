@@ -25,6 +25,7 @@ const Sidebar = ({ open, onClose }) => {
   const theme = useTheme();
   const { role } = useSelector((state) => state.user);
   const location = useLocation();
+  const { _id } = useSelector((state) => state.user);
 
   const navItems = [
     {
@@ -60,7 +61,7 @@ const Sidebar = ({ open, onClose }) => {
     {
       text: "Profile",
       icon: <PersonIcon />,
-      path: "/profile",
+      path: "/profile/" + _id,
       visible: true,
     },
   ];
