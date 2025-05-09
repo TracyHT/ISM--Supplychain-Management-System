@@ -7,16 +7,16 @@ import { createTheme } from "@mui/material/styles";
 import { themeSettings } from "./theme";
 import LoginPage from "./scenes/loginPage";
 import HomePage from "./scenes/homePage";
-import ProfilePage from "./scenes/supplier/profilePage";
 import MyProductPage from "./scenes/supplier/myProductPage";
 import AddProductPage from "./scenes/supplier/addProductPage";
 import ProductDetail from "./scenes/productDetailPage";
-import EmployeeProfilePage from "./scenes/employee/employeeprofilePage";
 import PaymentPage from "./scenes/employee/paymentPage";
 import PredictionPage from "./scenes/employee/predictionsPage";
 import DeletePage from "./scenes/deletePage";
 import Marketplace from "./scenes/employee/marketplace";
 import Inventory from "./scenes/employee/inventory";
+import ProfilePage from "./scenes/profilePage/profilePage";
+
 function App() {
   const mode = useSelector((state) => state.mode);
   const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
@@ -33,16 +33,7 @@ function App() {
               path="/home"
               element={isAuth ? <HomePage /> : <Navigate to="/" />}
             />
-            <Route
-              path="/employee/:userId"
-              element={
-                isAuth ? (
-                  <EmployeeProfilePage></EmployeeProfilePage>
-                ) : (
-                  <Navigate to="/" />
-                )
-              }
-            ></Route>
+
             <Route
               path="/myproduct"
               element={
@@ -86,6 +77,12 @@ function App() {
               path="/addProduct"
               element={
                 isAuth ? <AddProductPage></AddProductPage> : <Navigate to="/" />
+              }
+            ></Route>
+            <Route
+              path="/profile/:userId"
+              element={
+                isAuth ? <ProfilePage></ProfilePage> : <Navigate to="/" />
               }
             ></Route>
           </Routes>

@@ -97,43 +97,40 @@ const UserWidget = ({ userId, picturePath }) => {
           Role === "employee" ? () => navigate(`/employee/${userId}`) : ""
         }
       >
-        <FlexBetween gap="1rem">
-          <UserImage image={picturePath} />
-          <Box>
-            {!editMode ? ( // Display editable fields only if not in edit mode and if the logged-in user is viewing their own profile
-              <>
-                <Typography
-                  variant="h4"
-                  color={dark}
-                  fontWeight="500"
-                  sx={{
-                    "&:hover": {
-                      color: palette.primary.light,
-                      cursor: "pointer",
-                    },
-                  }}
-                >
-                  {firstName} {lastName}
-                </Typography>
-              </>
-            ) : (
-              <>
-                <TextField
-                  name="firstName"
-                  label="First Name"
-                  value={firstName}
-                  onChange={handleChange}
-                />
-                <TextField
-                  name="lastName"
-                  label="Last Name"
-                  value={lastName}
-                  onChange={handleChange}
-                />
-              </>
-            )}
-          </Box>
-        </FlexBetween>
+        <Box>
+          {!editMode ? ( // Display editable fields only if not in edit mode and if the logged-in user is viewing their own profile
+            <>
+              <Typography
+                variant="h1"
+                color={Text.primary}
+                fontWeight="bold"
+                sx={{
+                  "&:hover": {
+                    color: palette.primary.dark,
+                    cursor: "pointer",
+                  },
+                }}
+              >
+                {firstName} {lastName}
+              </Typography>
+            </>
+          ) : (
+            <>
+              <TextField
+                name="firstName"
+                label="First Name"
+                value={firstName}
+                onChange={handleChange}
+              />
+              <TextField
+                name="lastName"
+                label="Last Name"
+                value={lastName}
+                onChange={handleChange}
+              />
+            </>
+          )}
+        </Box>
         {userId === loggedInUserId &&
           !editMode && ( // Display edit button only if the logged-in user is viewing their own profile and if not in edit mode
             <ManageAccountsOutlined onClick={handleEdit} />
@@ -180,37 +177,6 @@ const UserWidget = ({ userId, picturePath }) => {
             />
           )}
         </Box>
-        {Role == "employee" && (
-          <Box display="flex" alignItems="center" gap="1rem" mb="0.5rem">
-            <Fingerprint fontSize="large" sx={{ color: main }}></Fingerprint>
-            {!editMode ? (
-              <Typography color={medium}>{employeeId}</Typography>
-            ) : (
-              <TextField
-                name="employeeId"
-                label="Employee ID"
-                value={employeeId}
-                onChange={handleChange}
-              />
-            )}
-          </Box>
-        )}
-
-        {Role == "supplier" && (
-          <Box display="flex" alignItems="center" gap="1rem" mb="0.5rem">
-            <Fingerprint fontSize="large" sx={{ color: main }}></Fingerprint>
-            {!editMode ? (
-              <Typography color={medium}>{supplierId}</Typography>
-            ) : (
-              <TextField
-                name="supplierId"
-                label="Supplier ID"
-                value={supplierId}
-                onChange={handleChange}
-              />
-            )}
-          </Box>
-        )}
       </Box>
     </WidgetWrapper>
   );
