@@ -25,13 +25,19 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
+import {
+  Inventory as InventoryIcon,
+  LocalShipping as LocalShippingIcon,
+  PendingActions as PendingActionsIcon,
+  AttachMoney as AttachMoneyIcon,
+} from "@mui/icons-material";
 import QuickStatsWidget from "../widgets/QuickStatWidget";
 
 const mockStats = [
-  { label: "Total Inventory", value: 120 },
-  { label: "Delivered", value: 95 },
-  { label: "Pending", value: 25 },
-  { label: "Revenue", value: "$12,000" },
+  { label: "Total Inventory", value: 120, icon: <InventoryIcon /> },
+  { label: "Delivered", value: 95, icon: <LocalShippingIcon /> },
+  { label: "Pending", value: 25, icon: <PendingActionsIcon /> },
+  { label: "Revenue", value: "$12,000", icon: <AttachMoneyIcon /> },
 ];
 
 const chartData = [
@@ -86,9 +92,58 @@ const EmployeeDashboard = () => {
       </Box>
 
       {/* Charts Section */}
-      <Box display="flex" flexWrap="wrap" gap={4}>
-        {/* Inventory Chart */}
+      <Box display="flex" flexWrap="wrap" gap={2}>
+        {/* Orders by Status Pie Chart */}
         <Box flex={1} minWidth={300}>
+          <Typography variant="h5" fontWeight="bold" mb={2}>
+            Orders by Status
+          </Typography>
+          <Paper elevation={2} sx={{ p: 2, height: 350 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={orderStatusData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  innerRadius={50}
+                  paddingAngle={4}
+                  fill={theme.palette.primary.main}
+                  label
+                  stroke="none"
+                >
+                  {orderStatusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: theme.palette.background.paper,
+                    padding: "0.5rem",
+                  }}
+                  labelStyle={{ fontWeight: "bold" }}
+                  itemStyle={{ color: theme.palette.text.primary }}
+                />
+                <Legend
+                  layout="horizontal"
+                  verticalAlign="bottom"
+                  align="center"
+                  wrapperStyle={{
+                    paddingTop: "2rem",
+                  }}
+                  iconType="circle"
+                  textStyle={{
+                    color: theme.palette.text.primary,
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </Paper>
+        </Box>
+        {/* Inventory Chart */}
+        <Box minWidth={300} width="65%">
           <Typography variant="h5" fontWeight="bold" mb={2}>
             Inventory Overview
           </Typography>
@@ -124,44 +179,6 @@ const EmployeeDashboard = () => {
                   }}
                 />
               </BarChart>
-            </ResponsiveContainer>
-          </Paper>
-        </Box>
-
-        {/* Orders by Status Pie Chart */}
-        <Box flex={1} minWidth={300}>
-          <Typography variant="h5" fontWeight="bold" mb={2}>
-            Orders by Status
-          </Typography>
-          <Paper elevation={2} sx={{ p: 2, height: 350 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={orderStatusData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  innerRadius={50}
-                  paddingAngle={4}
-                  fill={theme.palette.primary.main}
-                  label
-                  stroke="none"
-                >
-                  {orderStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: theme.palette.background.paper,
-                    padding: "0.5rem",
-                  }}
-                  labelStyle={{ fontWeight: "bold" }}
-                  itemStyle={{ color: theme.palette.text.primary }}
-                />
-              </PieChart>
             </ResponsiveContainer>
           </Paper>
         </Box>

@@ -23,9 +23,9 @@ import {
 const Sidebar = ({ open, onClose }) => {
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
   const theme = useTheme();
-  const { role } = useSelector((state) => state.user);
   const location = useLocation();
-  const { _id } = useSelector((state) => state.user);
+  const { role, _id } = useSelector((state) => state.user);
+  const alt = theme.palette.background.alt;
 
   const navItems = [
     {
@@ -61,19 +61,13 @@ const Sidebar = ({ open, onClose }) => {
     {
       text: "Profile",
       icon: <PersonIcon />,
-      path: "/profile/" + _id,
+      path: `/profile/${_id}`,
       visible: true,
     },
   ];
 
   const drawerContent = (
-    <Box
-      sx={{
-        width: 250,
-        backgroundColor: theme.palette.background.default,
-        height: "100%",
-      }}
-    >
+    <Box sx={{ width: 250, height: "100%", bgcolor: alt }}>
       <List>
         {navItems.map(
           (item) =>
@@ -104,42 +98,25 @@ const Sidebar = ({ open, onClose }) => {
   );
 
   return (
-    <Box>
-      {isNonMobileScreens ? (
-        <Drawer
-          variant="permanent"
-          sx={{
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
-              width: 250,
-              borderRight: `1px solid ${theme.palette.divider}`,
-              top: "100px", // Adjusted to match navbar height
-              height: "calc(100% - 64px)",
-              zIndex: 900, // Below navbar but above content
-            },
-          }}
-        >
-          {drawerContent}
-        </Drawer>
-      ) : (
-        <Drawer
-          variant="temporary"
-          open={open}
-          onClose={onClose}
-          sx={{
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
-              width: 250,
-              top: "64px", // Start below navbar
-              height: "calc(100% - 64px)",
-              zIndex: 1200, // Above navbar and mobile menu
-            },
-          }}
-        >
-          {drawerContent}
-        </Drawer>
-      )}
-    </Box>
+    <Drawer
+      variant={isNonMobileScreens ? "permanent" : "temporary"}
+      open={isNonMobileScreens ? true : open}
+      onClose={!isNonMobileScreens ? onClose : undefined}
+      PaperProps={{
+        sx: {
+          width: 250,
+          boxSizing: "border-box",
+          bgcolor: alt,
+          paddingTop: "2px",
+          top: isNonMobileScreens ? "64px" : "0px",
+          height: "100%",
+          borderRight: `1px solid ${theme.palette.divider}`,
+          zIndex: isNonMobileScreens ? 900 : 1200,
+        },
+      }}
+    >
+      {drawerContent}
+    </Drawer>
   );
 };
 
