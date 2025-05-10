@@ -1,4 +1,5 @@
-import React from "react";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import {
   Box,
   Typography,
@@ -17,7 +18,6 @@ import {
   Pie,
   Cell,
   Bar,
-  LabelList,
   Legend,
   XAxis,
   YAxis,
@@ -27,26 +27,11 @@ import {
 } from "recharts";
 import {
   Inventory as InventoryIcon,
-  LocalShipping as LocalShippingIcon,
+  Autorenew as AutorenewIcon,
   PendingActions as PendingActionsIcon,
   AttachMoney as AttachMoneyIcon,
 } from "@mui/icons-material";
 import QuickStatsWidget from "../widgets/QuickStatWidget";
-
-const mockStats = [
-  { label: "Total Inventory", value: 120, icon: <InventoryIcon /> },
-  { label: "Delivered", value: 95, icon: <LocalShippingIcon /> },
-  { label: "Pending", value: 25, icon: <PendingActionsIcon /> },
-  { label: "Revenue", value: "$12,000", icon: <AttachMoneyIcon /> },
-];
-
-const chartData = [
-  { name: "Jan", quantity: 400 },
-  { name: "Feb", quantity: 300 },
-  { name: "Mar", quantity: 200 },
-  { name: "Apr", quantity: 278 },
-  { name: "May", quantity: 189 },
-];
 
 const recentOrders = [
   {
@@ -77,11 +62,69 @@ const recentOrders = [
 
 const EmployeeDashboard = () => {
   const theme = useTheme();
+  const { _id } = useSelector((state) => state.user);
+  const { token } = useSelector((state) => state);
+  const [user, setUser] = useState(null);
+  const [totalInventory, setTotalInventory] = useState(0);
+  const [inventoryByCategory, setInventoryByCategory] = useState([]);
 
   const orderStatusData = [
     { name: "Delivered", value: 95, color: theme.palette.teal[500] },
     { name: "Pending", value: 25, color: theme.palette.teal[700] },
     { name: "Canceled", value: 10, color: theme.palette.grey[500] },
+  ];
+
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:6001/inventory/${_id}/inventory`
+        );
+        const data = await response.json();
+        const grouped = data.products.reduce((acc, product) => {
+          const category = product.category || "Uncategorized";
+          acc[category] = (acc[category] || 0) + product.quantity;
+          return acc;
+        }, {});
+        const chartFormatted = Object.entries(grouped).map(
+          ([name, quantity]) => ({ name, quantity })
+        );
+        setInventoryByCategory(chartFormatted);
+        setTotalInventory(data.products.length);
+      } catch (error) {
+        console.error("Error fetching inventory:", error);
+      }
+    };
+
+    fetchInventory();
+  }, [_id]);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`http://localhost:6001/users/${_id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setUser(data);
+        console.log("User data:", data);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+
+    fetchUser();
+  }, [_id]);
+
+  const mockStats = [
+    {
+      label: "Total Inventory",
+      value: totalInventory,
+      icon: <InventoryIcon />,
+    },
+    { label: "Low In Stock", value: 95, icon: <AutorenewIcon /> },
+    { label: "Pending Orders", value: 25, icon: <PendingActionsIcon /> },
+    { label: "Revenue", value: user?.balance, icon: <AttachMoneyIcon /> },
   ];
 
   return (
@@ -108,9 +151,8 @@ const EmployeeDashboard = () => {
                   cx="50%"
                   cy="50%"
                   outerRadius={100}
-                  innerRadius={50}
+                  innerRadius={70}
                   paddingAngle={4}
-                  fill={theme.palette.primary.main}
                   label
                   stroke="none"
                 >
@@ -142,15 +184,16 @@ const EmployeeDashboard = () => {
             </ResponsiveContainer>
           </Paper>
         </Box>
-        {/* Inventory Chart */}
+
+        {/* Inventory Overview Chart */}
         <Box minWidth={300} width="65%">
           <Typography variant="h5" fontWeight="bold" mb={2}>
-            Inventory Overview
+            Inventory Overview by Category
           </Typography>
           <Paper elevation={2} sx={{ p: 2, height: 350 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={chartData}
+                data={inventoryByCategory}
                 margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
                 barCategoryGap="15%"
               >
@@ -165,7 +208,9 @@ const EmployeeDashboard = () => {
                     backgroundColor: theme.palette.background.paper,
                     padding: "0.5rem",
                   }}
-                  labelStyle={{ fontWeight: "bold" }}
+                  labelStyle={{
+                    fontWeight: "bold",
+                  }}
                   itemStyle={{ color: theme.palette.text.primary }}
                 />
                 <Bar
@@ -194,54 +239,21 @@ const EmployeeDashboard = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      color: theme.palette.text.primary,
-                    }}
-                  >
+                  <TableCell sx={{ fontWeight: "bold" }}>
                     Product Name
                   </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      color: theme.palette.text.primary,
-                    }}
-                  >
-                    Status
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      color: theme.palette.text.primary,
-                    }}
-                  >
-                    Date
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      color: theme.palette.text.primary,
-                    }}
-                  >
-                    Quantity
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      color: theme.palette.text.primary,
-                    }}
-                  >
-                    Amount
-                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Quantity</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Amount</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {recentOrders.map((order) => (
                   <TableRow key={order.name}>
                     <TableCell>{order.name}</TableCell>
-                    <TableCell>{order.date}</TableCell>
                     <TableCell>{order.status}</TableCell>
+                    <TableCell>{order.date}</TableCell>
                     <TableCell>{order.quantity}</TableCell>
                     <TableCell>{order.amount}</TableCell>
                   </TableRow>
