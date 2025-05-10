@@ -34,7 +34,6 @@ export const createProduct = async (req, res) => {
     await newProduct.save();
     console.log("Saved Product");
 
-    const product = await Product.find(); //grabs all the Products and display it on frontend
     res.status(201).json(product);
   } catch (err) {
     console.error(err.stack);
@@ -256,7 +255,6 @@ export const updateProduct = async (req, res) => {
 export const BookProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId } = req.body;
     const product = await Product.findById(id);
 
     if (!product) {
@@ -275,9 +273,10 @@ export const BookProduct = async (req, res) => {
 
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
-      { bookings: product.bookings },
       { new: true }
     );
+
+    console.log("Updated Product:", updatedProduct);
 
     res.status(200).json(updatedProduct);
   } catch (err) {

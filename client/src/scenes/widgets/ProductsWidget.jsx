@@ -14,7 +14,7 @@ const ProductsWidget = ({
   userId,
   isProfile = false,
   isBookedProducts = false,
-  defaultStatus = "", // Prop to set the fixed status (e.g., "Marketplace" or "Inventory")
+  defaultStatus = "",
 }) => {
   const dispatch = useDispatch();
   const products = useSelector((state) => state.products);
@@ -29,7 +29,6 @@ const ProductsWidget = ({
   const [filterCategory, setFilterCategory] = useState(
     JSON.parse(localStorage.getItem("productFilterCategory")) || []
   );
-  const [filterStatus] = useState(defaultStatus ? [defaultStatus] : []);
   const [filterName, setFilterName] = useState(
     JSON.parse(localStorage.getItem("productFilterName")) || ""
   );
@@ -46,26 +45,29 @@ const ProductsWidget = ({
     setPage(1);
     localStorage.removeItem("productFilterCategory");
     localStorage.removeItem("productFilterName");
-    localStorage.removeItem("productFilterStatus"); // Remove stored status since it's now controlled by defaultStatus
   };
 
+  // Cập nhật `useEffect` để kiểm tra `defaultStatus` và gọi API phù hợp
   useEffect(() => {
     const getProducts = async () => {
       try {
         setLoading(true);
         const filterCategoryString = filterCategory.join(",");
-        const filterStatusString = filterStatus.join(",");
 
-        const response = await fetch(
-          `http://localhost:6001/products?page=${page}&sort=${sort.sort},${sort.order}&category=${filterCategoryString}&status=${filterStatusString}&search=${search}&name=${filterName}`,
-          {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const baseUrl =
+          defaultStatus === "Marketplace"
+            ? "http://localhost:6001/products"
+            : `http://localhost:6001/inventory/${userId}/inventory`; // Gọi API cho Inventory
+
+        const queryParams = `?page=${page}&sort=${sort.sort},${sort.order}&category=${filterCategoryString}&search=${search}&name=${filterName}`;
+
+        const response = await fetch(`${baseUrl}${queryParams}`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         const data = await response.json();
-
+        console.log("Inventory data:", data);
         dispatch(setProducts({ products: data }));
         setLoading(false);
       } catch (error) {
@@ -74,25 +76,28 @@ const ProductsWidget = ({
       }
     };
 
-    const getUserProducts = async () => {
-      setLoading(true);
-      const filterCategoryString = filterCategory.join(",");
-      const response = await fetch(
-        `http://localhost:6001/products/${userId}/products?page=${page}&sort=${
-          sort.sort
-        },${
-          sort.order
-        }&category=${filterCategoryString}&search=${search}&name=${filterName}&status=${filterStatus.join(
-          ","
-        )}`,
-        {
+    const getSupplierProduct = async () => {
+      try {
+        setLoading(true);
+        const filterCategoryString = filterCategory.join(",");
+
+        const baseUrl = `http://localhost:6001/products/${userId}/products`;
+
+        const queryParams = `?page=${page}&sort=${sort.sort},${sort.order}&category=${filterCategoryString}&search=${search}&name=${filterName}`;
+
+        const response = await fetch(`${baseUrl}${queryParams}`, {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const data = await response.json();
-      dispatch(setProducts({ products: data }));
-      setLoading(false);
+        });
+
+        const data = await response.json();
+        console.log("Inventory data:", data);
+        dispatch(setProducts({ products: data }));
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setLoading(false);
+      }
     };
 
     const getBookedProducts = async () => {
@@ -100,13 +105,7 @@ const ProductsWidget = ({
       const filterCategoryString = filterCategory.join(",");
 
       const response = await fetch(
-        `http://localhost:6001/products/${userId}/bookedproducts?page=${page}&sort=${
-          sort.sort
-        },${
-          sort.order
-        }&category=${filterCategoryString}&search=${search}&name=${filterName}&status=${filterStatus.join(
-          ","
-        )}`,
+        `http://localhost:6001/products/${userId}/bookedproducts?page=${page}&sort=${sort.sort},${sort.order}&category=${filterCategoryString}&search=${search}&name=${filterName}`,
         {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
@@ -117,24 +116,26 @@ const ProductsWidget = ({
       setLoading(false);
     };
 
-    if (isProfile) {
-      getUserProducts();
+    // Điều kiện gọi API tùy thuộc vào `defaultStatus`
+    if (Role === "supplier") {
+      getSupplierProduct();
+    } else if (defaultStatus === "Marketplace") {
+      getProducts();
+    } else if (defaultStatus === "Inventory") {
+      getProducts();
     } else if (isBookedProducts) {
       getBookedProducts();
-    } else {
-      getProducts();
     }
   }, [
     sort,
     filterCategory,
-    filterStatus,
     filterName,
     page,
     search,
     userId,
     isProfile,
     token,
-    defaultStatus, // Re-run effect if defaultStatus changes
+    defaultStatus, // Re-run effect nếu `defaultStatus` thay đổi
   ]);
 
   const handleSortChange = (newSort) => {
@@ -245,8 +246,8 @@ const ProductsWidget = ({
                     reorderPoint,
                     maxQuantity,
                     category,
-                    status,
                     bookings,
+                    orders,
                   }) => (
                     <Grid item xs={12} sm={6} key={_id}>
                       <ProductWidget
@@ -259,9 +260,10 @@ const ProductsWidget = ({
                         minQuantity={minQuantity}
                         reorderPoint={reorderPoint}
                         maxQuantity={maxQuantity}
-                        status={status}
                         category={category}
                         bookings={bookings}
+                        defaultStatus={defaultStatus}
+                        orders={orders}
                       />
                     </Grid>
                   )
