@@ -103,7 +103,7 @@ const ProductDetailWidget = ({ productId }) => {
   } = productDetails;
 
   const isBooked = Boolean(bookings[loggedInUserId]);
-  const orderCount = orders.length; // Safe to access since orders defaults to []
+  const orderCount = orders.length;
   const orderIds = orders; // Array of order IDs (strings)
 
   // Product details to display
@@ -162,6 +162,8 @@ const ProductDetailWidget = ({ productId }) => {
       }
 
       const updatedProduct = await bookResponse.json();
+
+      console.log("Product booked successfully:", updatedProduct);
 
       // Step 3: Update Redux store with the updated product
       setProductDetails(updatedProduct);

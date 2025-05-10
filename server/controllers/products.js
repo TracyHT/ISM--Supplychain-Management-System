@@ -34,6 +34,7 @@ export const createProduct = async (req, res) => {
     await newProduct.save();
     console.log("Saved Product");
 
+    const product = await Product.find(); //grabs all the Products and display it on frontend
     res.status(201).json(product);
   } catch (err) {
     console.error(err.stack);
@@ -255,11 +256,15 @@ export const updateProduct = async (req, res) => {
 export const BookProduct = async (req, res) => {
   try {
     const { id } = req.params;
+    const { userId, orderId } = req.body;
     const product = await Product.findById(id);
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+
+    console.log("Product found:", product);
+    console.log(userId, orderId);
 
     const isBooked = product.bookings.get(userId);
 
@@ -269,14 +274,14 @@ export const BookProduct = async (req, res) => {
     } else {
       // User is not booked, so add the booking
       product.bookings.set(userId, true);
+      product.orders.push(orderId.toString());
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
+      { bookings: product.bookings, orders: product.orders },
       { new: true }
     );
-
-    console.log("Updated Product:", updatedProduct);
 
     res.status(200).json(updatedProduct);
   } catch (err) {
@@ -316,10 +321,6 @@ export const getBookedProducts = async (req, res) => {
     } else {
       sortBy[sort[0]] = "asc";
     }
-    // Construct the filter object for MongoDB query
-    let filter = {
-      [`bookings.${userId}`]: true, // Check if userId exists in the bookings map
-    };
 
     if (category.length > 0) {
       filter.category = { $in: category };

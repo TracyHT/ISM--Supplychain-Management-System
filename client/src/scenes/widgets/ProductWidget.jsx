@@ -144,7 +144,7 @@ const ProductWidget = ({
             }}
           >
             <Typography color="text.primary" variant="subtitle1">
-              {bookingCount} Bookings
+              {orders.length} Bookings
             </Typography>
           </Box>
         )}
