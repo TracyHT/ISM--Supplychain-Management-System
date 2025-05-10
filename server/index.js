@@ -8,7 +8,6 @@ import helmet from "helmet";
 import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
-import { verify } from "crypto";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
 import User from "./models/User.js";
@@ -19,6 +18,7 @@ import { verifyToken } from "./middleware/auth.js";
 import { createProduct } from "./controllers/products.js";
 import productRoutes from "./routes/products.js";
 import inventoryRoutes from "./routes/inventory.js";
+import orderRoutes from "./routes/orders.js";
 
 /*CONFIGURATION*/
 const __filename = fileURLToPath(import.meta.url);
@@ -53,6 +53,7 @@ app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/products", productRoutes);
 app.use("/inventory", inventoryRoutes);
+app.use("/orders", orderRoutes);
 
 /* MONGOOSE SETUP*/
 const PORT = process.env.PORT || 6001;

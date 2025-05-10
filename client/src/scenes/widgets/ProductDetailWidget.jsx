@@ -1,4 +1,11 @@
-import { Box, Button, Typography, useMediaQuery } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  useMediaQuery,
+  TextField,
+} from "@mui/material";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import WidgetWrapper from "../../components/WidgetWrapper";
@@ -37,20 +44,7 @@ const ProductDetailRow = ({ label, value, isNonMobileScreens }) => (
 );
 
 // Main ProductDetailWidget component
-const ProductDetailWidget = ({
-  productId,
-  productUserId,
-  name,
-  description,
-  price,
-  quantity,
-  minQuantity,
-  reorderPoint,
-  maxQuantity,
-  status,
-  category,
-  bookings,
-}) => {
+const ProductDetailWidget = ({ productId }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
@@ -58,15 +52,95 @@ const ProductDetailWidget = ({
     token: state.token,
     user: state.user,
   }));
-  const { role, _id: loggedInUserId } = user;
-  const isBooked = Boolean(bookings[loggedInUserId]);
-  const bookingCount = Object.keys(bookings).length;
-  const userIds = Object.keys(bookings);
+  const { role, _id: loggedInUserId } = user || {}; // Safeguard for undefined user
 
-  // Handle product booking/cancellation
-  const handleBooking = async () => {
+  // State to hold selected quantity and product data
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [productDetails, setProductDetails] = useState(null); // New state for fetched product
+
+  // Fetch the product details when productId changes
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:6001/products/${productId}/product`
+        );
+        const data = await response.json();
+
+        if (response.status === 200) {
+          setProductDetails(data);
+        } else {
+          alert("Error fetching product details: " + data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        alert("An error occurred while fetching the product.");
+      }
+    };
+
+    if (productId) {
+      fetchProduct();
+    }
+  }, [productId]);
+
+  // Return loading state if productDetails is null
+  if (!productDetails) {
+    return <Typography color="white">Loading product details...</Typography>;
+  }
+
+  const {
+    name,
+    description,
+    price,
+    quantity,
+    minQuantity,
+    reorderPoint,
+    maxQuantity,
+    status,
+    category,
+    bookings = {},
+    orders = [],
+  } = productDetails;
+
+  const isBooked = Boolean(bookings[loggedInUserId]);
+  const orderCount = orders.length; // Safe to access since orders defaults to []
+  const orderIds = orders; // Array of order IDs (strings)
+
+  // Product details to display
+
+  // Handle order placement and booking (Employee)
+  const handleOrder = async () => {
+    // Validate selected quantity
+    if (selectedQuantity < 1 || selectedQuantity > quantity) {
+      alert("Please select a valid quantity between 1 and " + quantity);
+      return;
+    }
+
     try {
-      const response = await fetch(
+      // Step 1: Create the order
+      const orderResponse = await fetch("http://localhost:6001/orders", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId,
+          quantity: selectedQuantity,
+          pricePerUnit: price,
+        }),
+      });
+
+      if (orderResponse.status !== 201) {
+        const errorData = await orderResponse.json();
+        alert(errorData.message);
+        return;
+      }
+
+      const orderData = await orderResponse.json();
+
+      // Step 2: Book the product
+      const bookResponse = await fetch(
         `http://localhost:6001/products/${productId}/booking`,
         {
           method: "PATCH",
@@ -74,32 +148,36 @@ const ProductDetailWidget = ({
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ userId: loggedInUserId }),
+          body: JSON.stringify({
+            userId: loggedInUserId,
+            orderId: orderData.order._id, // Pass the newly created order ID
+          }),
         }
       );
 
-      if (response.status === 400) {
-        const data = await response.json();
-        alert(data.message);
+      if (bookResponse.status !== 200) {
+        const errorData = await bookResponse.json();
+        alert("Order placed, but failed to book product: " + errorData.message);
         return;
       }
 
-      const updatedProduct = await response.json();
+      const updatedProduct = await bookResponse.json();
+
+      // Step 3: Update Redux store with the updated product
+      setProductDetails(updatedProduct);
       dispatch(setProduct({ product: updatedProduct }));
+
+      alert("Order placed and product booked successfully!");
     } catch (error) {
-      console.error("Error updating product booking:", error);
-      alert("An error occurred while updating the booking.");
+      console.error("Error during order and booking process:", error);
+      alert("An error occurred while processing your request.");
     }
   };
 
-  // Navigate to payment page
-  const handlePayment = () => navigate("/pay");
-
-  // Product details to display
-  const productDetails = [
-    { label: "Description", value: description },
-    { label: "Price", value: price },
-    { label: "Quantity", value: quantity },
+  const details = [
+    { label: "Description", value: description || "N/A" },
+    { label: "Price", value: price || "N/A" },
+    { label: "Quantity", value: quantity || "0" },
     ...(minQuantity != null
       ? [
           { label: "Minimum Quantity", value: minQuantity },
@@ -107,8 +185,13 @@ const ProductDetailWidget = ({
           { label: "Maximum Quantity", value: maxQuantity },
         ]
       : []),
-    { label: "Category", value: category },
+    { label: "Category", value: category || "N/A" },
   ];
+
+  // Return loading state if user is undefined
+  if (!user) {
+    return <Typography color="white">Loading user data...</Typography>;
+  }
 
   return (
     <Box
@@ -139,13 +222,13 @@ const ProductDetailWidget = ({
             fontWeight="bold"
             textAlign="center"
           >
-            {name}
+            {name || "Product"}
           </Typography>
         </Box>
 
         {/* Product Details */}
         <Box>
-          {productDetails.map(({ label, value }) => (
+          {details.map(({ label, value }) => (
             <ProductDetailRow
               key={label}
               label={label}
@@ -156,7 +239,7 @@ const ProductDetailWidget = ({
         </Box>
 
         {/* Employee Actions */}
-        {role === "employee" && status === "Marketplace" && (
+        {role === "employee" && (
           <Box
             sx={{
               display: "flex",
@@ -165,74 +248,62 @@ const ProductDetailWidget = ({
               mt: "2rem",
             }}
           >
-            <Button
-              onClick={handleBooking}
-              variant={isBooked ? "contained" : "outlined"}
-              color={isBooked ? "error" : "primary"}
-              sx={{
-                fontWeight: "bold",
-                padding: "0.8rem 2rem",
-                borderRadius: "1.5rem",
+            <TextField
+              label="Quantity"
+              type="number"
+              value={selectedQuantity}
+              onChange={(e) => setSelectedQuantity(Number(e.target.value))}
+              inputProps={{
+                min: 1,
+                max: quantity || Infinity,
               }}
-            >
-              {isBooked ? "Cancel Product" : "Order Product"}
-            </Button>
+              sx={{
+                width: "100px",
+                backgroundColor: "#2a2a2a",
+                borderRadius: "0.5rem",
+                padding: "0.5rem",
+              }}
+            />
             <Button
-              onClick={handlePayment}
+              onClick={handleOrder}
               variant="contained"
-              color="success"
+              color="primary"
               sx={{
                 fontWeight: "bold",
                 padding: "0.8rem 2rem",
                 borderRadius: "1.5rem",
               }}
+              disabled={!token || !loggedInUserId}
             >
-              Pay
+              Order Product
             </Button>
-          </Box>
-        )}
-
-        {/* Supplier Booking Info */}
-        {role === "supplier" && status === "Marketplace" && (
-          <Box
-            sx={{
-              borderRadius: "2rem",
-              padding: "1rem",
-              backgroundColor: "#2a2a2a",
-              mt: "1.5rem",
-            }}
-          >
-            <Typography color="white" variant="subtitle1" ml="0.3rem">
-              Orders for this Product:
-            </Typography>
-            <Typography
-              ml="0.5rem"
-              color="white"
-              variant="h6"
-              fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
-              fontWeight="bold"
-            >
-              {bookingCount}
-            </Typography>
           </Box>
         )}
       </WidgetWrapper>
 
-      {/* Booked Users Section (Supplier Only) */}
-      {role === "supplier" && userIds.length > 0 && (
-        <Box sx={{ width: isNonMobileScreens ? "400px" : "100%" }}>
+      {/* Supplier Order Info */}
+      {role === "supplier" && (
+        <Box
+          sx={{
+            mt: "1.5rem",
+          }}
+        >
+          <Typography color="white" variant="subtitle1" ml="0.3rem">
+            Orders for this Product:
+          </Typography>
           <Typography
-            textAlign="center"
-            fontSize={isNonMobileScreens ? "2rem" : "1.5rem"}
-            color="#834bff"
-            fontWeight="bold"
+            ml="0.5rem"
             mb="1rem"
+            color="white"
+            variant="h6"
+            fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
+            fontWeight="bold"
           >
-            Ordered this Product
+            {orderCount}
           </Typography>
           <Box sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {userIds.map((userId) => (
-              <BookedUserWidget key={userId} userId={userId} />
+            {orders.map((orderId) => (
+              <BookedUserWidget key={orderId} orderId={orderId} />
             ))}
           </Box>
         </Box>

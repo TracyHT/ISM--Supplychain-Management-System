@@ -247,6 +247,7 @@ const ProductsWidget = ({
                     maxQuantity,
                     category,
                     bookings,
+                    orders,
                   }) => (
                     <Grid item xs={12} sm={6} key={_id}>
                       <ProductWidget
@@ -262,6 +263,7 @@ const ProductsWidget = ({
                         category={category}
                         bookings={bookings}
                         defaultStatus={defaultStatus}
+                        orders={orders}
                       />
                     </Grid>
                   )

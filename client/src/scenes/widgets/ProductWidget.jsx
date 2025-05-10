@@ -42,6 +42,7 @@ const ProductWidget = ({
   category,
   bookings,
   defaultStatus,
+  orders,
 }) => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.token);
@@ -120,7 +121,7 @@ const ProductWidget = ({
         </Grid>
 
         {/* Reorder Point - Only if available */}
-        {reorderPoint != null && (
+        {reorderPoint != null && defaultStatus == "Inventory" && (
           <Grid item xs={12} sm={6}>
             <LabelValue label="Reorder Point" value={reorderPoint} />
           </Grid>

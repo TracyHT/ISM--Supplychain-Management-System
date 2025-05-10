@@ -42,6 +42,11 @@ const ProductSchema = new mongoose.Schema(
       type: Map,
       of: Boolean,
     },
+    orders: [
+      {
+        type: String,
+      },
+    ],
   },
   { timestamps: true }
 );
