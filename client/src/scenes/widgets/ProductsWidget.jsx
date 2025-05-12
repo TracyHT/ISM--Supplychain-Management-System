@@ -215,7 +215,7 @@ const ProductsWidget = ({
         }
       );
       const result = await response.json();
-      dispatch(setProduct({ product: result }));
+      dispatch(setProducts({ product: result }));
       navigate("/delete");
     } catch (error) {
       console.error("Failed to delete product:", error);
