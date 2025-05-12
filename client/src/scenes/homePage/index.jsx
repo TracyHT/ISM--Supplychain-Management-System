@@ -22,7 +22,7 @@ const HomePage = () => {
           sx={{
             flexGrow: 1,
             marginTop: "100px",
-            marginLeft: isNonMobileScreens ? "250px" : 0,
+            marginLeft: isNonMobileScreens ? "200px" : 0,
             padding: "2rem 6%",
           }}
         >
@@ -30,9 +30,9 @@ const HomePage = () => {
           <Box mb="2rem">
             <Typography
               variant="h1"
-              color="primary"
+              color="text.primary"
               mb="1rem"
-              fontWeight={"bold"}
+              fontWeight={"semi-bold"}
             >
               Welcome, {firstName}!
             </Typography>
