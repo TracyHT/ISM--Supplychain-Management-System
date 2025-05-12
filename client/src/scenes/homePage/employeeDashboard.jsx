@@ -159,7 +159,7 @@ const EmployeeDashboard = () => {
     <Box>
       {/* Quick Stats */}
       <Box width="100%" mb={4}>
-        <QuickStatsWidget data={mockStats} />
+        <QuickStatsWidget data={mockStats} elevation={2} />
       </Box>
 
       {/* Charts Section */}
@@ -169,7 +169,11 @@ const EmployeeDashboard = () => {
           <Typography variant="h5" fontWeight="bold" mb={2}>
             Orders by Status
           </Typography>
-          <Paper elevation={2} sx={{ p: 2, height: 350 }}>
+          <Paper
+            elevation={0}
+            backgroundColor={theme.palette.background.alt}
+            sx={{ p: 2, height: 350 }}
+          >
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -195,7 +199,7 @@ const EmployeeDashboard = () => {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: theme.palette.background.paper,
+                    backgroundColor: theme.palette.background.alt,
                     padding: "0.5rem",
                   }}
                   labelStyle={{ fontWeight: "bold" }}
@@ -223,7 +227,11 @@ const EmployeeDashboard = () => {
           <Typography variant="h5" fontWeight="bold" mb={2}>
             Inventory Overview by Category
           </Typography>
-          <Paper elevation={2} sx={{ p: 2, height: 350 }}>
+          <Paper
+            elevation={0}
+            backgroundColor={theme.palette.background.alt}
+            sx={{ p: 2, height: 350 }}
+          >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={inventoryByCategory}
@@ -275,7 +283,7 @@ const EmployeeDashboard = () => {
                   radius={[4, 4, 0, 0]}
                   activeBar={{
                     fill: theme.palette.primary.main,
-                    backgroundColor: theme.palette.background.paper,
+                    backgroundColor: theme.palette.background.alt,
                   }}
                 />
               </BarChart>
@@ -289,7 +297,7 @@ const EmployeeDashboard = () => {
         <Typography variant="h5" fontWeight="bold" mb={2}>
           Recent Orders
         </Typography>
-        <Paper elevation={2} sx={{ p: 2, overflowX: "auto" }}>
+        <Paper elevation={1} sx={{ p: 2, overflowX: "auto" }}>
           <TableContainer>
             <Table>
               <TableHead>
