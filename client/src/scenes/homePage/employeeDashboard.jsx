@@ -24,6 +24,7 @@ import {
   Tooltip,
   CartesianGrid,
   ResponsiveContainer,
+  Label,
 } from "recharts";
 import {
   Inventory as InventoryIcon,
@@ -61,18 +62,45 @@ const recentOrders = [
 ];
 
 const EmployeeDashboard = () => {
-  const theme = useTheme();
   const { _id } = useSelector((state) => state.user);
   const { token } = useSelector((state) => state);
   const [user, setUser] = useState(null);
   const [totalInventory, setTotalInventory] = useState(0);
   const [inventoryByCategory, setInventoryByCategory] = useState([]);
+  const theme = useTheme();
 
   const orderStatusData = [
     { name: "Delivered", value: 95, color: theme.palette.teal[500] },
     { name: "Pending", value: 25, color: theme.palette.teal[700] },
     { name: "Canceled", value: 10, color: theme.palette.grey[500] },
   ];
+
+  const renderCenterLabel = ({ viewBox }) => {
+    const { cx, cy } = viewBox;
+    const total = orderStatusData.reduce((sum, item) => sum + item.value, 0);
+
+    return (
+      <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central">
+        <tspan
+          x={cx}
+          dy="-0.3em"
+          fontSize="24"
+          fontWeight="bold"
+          fill={theme.palette.text.primary}
+        >
+          {total}
+        </tspan>
+        <tspan
+          x={cx}
+          dy="1.8em"
+          fontSize="14"
+          fill={theme.palette.text.secondary}
+        >
+          Total Orders
+        </tspan>
+      </text>
+    );
+  };
 
   useEffect(() => {
     const fetchInventory = async () => {
@@ -86,9 +114,9 @@ const EmployeeDashboard = () => {
           acc[category] = (acc[category] || 0) + product.quantity;
           return acc;
         }, {});
-        const chartFormatted = Object.entries(grouped).map(
-          ([name, quantity]) => ({ name, quantity })
-        );
+        const chartFormatted = Object.entries(grouped)
+          .map(([name, quantity]) => ({ name, quantity }))
+          .sort((a, b) => a.name.localeCompare(b.name));
         setInventoryByCategory(chartFormatted);
         setTotalInventory(data.products.length);
       } catch (error) {
@@ -118,13 +146,13 @@ const EmployeeDashboard = () => {
 
   const mockStats = [
     {
-      label: "Total Inventory",
+      label: "TOTAL INVENTORY",
       value: totalInventory,
       icon: <InventoryIcon />,
     },
-    { label: "Low In Stock", value: 95, icon: <AutorenewIcon /> },
-    { label: "Pending Orders", value: 25, icon: <PendingActionsIcon /> },
-    { label: "Revenue", value: user?.balance, icon: <AttachMoneyIcon /> },
+    { label: "LOW IN STOCK", value: 95, icon: <AutorenewIcon /> },
+    { label: "PENDING ORDERS", value: 25, icon: <PendingActionsIcon /> },
+    { label: "BALANCE", value: user?.balance, icon: <AttachMoneyIcon /> },
   ];
 
   return (
@@ -156,6 +184,11 @@ const EmployeeDashboard = () => {
                   label
                   stroke="none"
                 >
+                  <Label
+                    content={renderCenterLabel}
+                    position="center"
+                    fill="FFFFFF"
+                  />
                   {orderStatusData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
@@ -201,7 +234,29 @@ const EmployeeDashboard = () => {
                   stroke={theme.palette.grey[600]}
                   strokeDasharray="3 3"
                 />
-                <XAxis dataKey="name" />
+                <XAxis
+                  dataKey="name"
+                  tick={({ x, y, payload }) => {
+                    const maxChars = 10;
+                    const label =
+                      payload.value.length > maxChars
+                        ? payload.value.slice(0, maxChars) + "…"
+                        : payload.value;
+
+                    return (
+                      <text
+                        x={x}
+                        y={y + 15}
+                        textAnchor="middle"
+                        fill="#ccc"
+                        fontSize={12}
+                        dy={0}
+                      >
+                        {label}
+                      </text>
+                    );
+                  }}
+                />
                 <YAxis />
                 <Tooltip
                   contentStyle={{
@@ -212,6 +267,7 @@ const EmployeeDashboard = () => {
                     fontWeight: "bold",
                   }}
                   itemStyle={{ color: theme.palette.text.primary }}
+                  cursor={false}
                 />
                 <Bar
                   dataKey="quantity"
@@ -219,8 +275,7 @@ const EmployeeDashboard = () => {
                   radius={[4, 4, 0, 0]}
                   activeBar={{
                     fill: theme.palette.primary.main,
-                    stroke: theme.palette.primary[700],
-                    strokeWidth: 2,
+                    backgroundColor: theme.palette.background.paper,
                   }}
                 />
               </BarChart>

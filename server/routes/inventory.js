@@ -14,7 +14,7 @@ const router = express.Router();
 /*READ*/
 router.get("/", getFeedItems);
 router.post("/", verifyToken, createInventoryItem); // Define the create route
-// router.get("/:userId/inventory", getUserInventory);
+router.get("/:userId/inventory", getUserInventory);
 router.get("/:productId/inventory", getItemDetails);
 
 /*UPDATE*/
