@@ -75,7 +75,7 @@ const ProductsWidget = ({
     {
       label: "REORDER POINT",
       accessor: "reorderPoint",
-      show: !(Role === "employee" && defaultStatus === "Marketplace"),
+      show: !(defaultStatus === "Marketplace"),
     },
     {
       label: "ACTION",

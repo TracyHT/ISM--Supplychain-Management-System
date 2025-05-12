@@ -118,18 +118,25 @@ const AddProductWidget = ({ picturePath }) => {
 
   console.log(name, category, price, quantity);
   return (
-    <WidgetWrapper width={isNonMobileScreens ? "50%" : "100%"}>
-      <Box display={"flex"} justifyContent="center" alignItems="center" gap={5}>
-        <UserImage image={picturePath}></UserImage>
-        {Role == "employee" ? (
-          <Typography fontSize={"3rem"} color={"primary"}>
-            Product Form
-          </Typography>
-        ) : (
-          <Typography fontSize={"3rem"} color={"#834bff"}>
-            Product Form
-          </Typography>
-        )}
+    <WidgetWrapper
+      width={isNonMobileScreens ? "50%" : "100%"}
+      display="flex"
+      flexDirection="column"
+    >
+      <Box
+        display={"flex"}
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
+        gap={1}
+      >
+        <Typography variant="h2" color="text.primary" fontWeight="medium">
+          Add A New Product
+        </Typography>
+
+        <Typography variant="body" color="text.secondary">
+          Please fill your product information to the form below.
+        </Typography>
       </Box>
 
       <Box
@@ -273,7 +280,7 @@ const AddProductWidget = ({ picturePath }) => {
         </Box>
       )}
 
-      <Box display="flex" alignItems="center" marginBottom="1rem">
+      <Box display="flex" alignItems="center" marginBottom="2rem">
         <Box>
           <CategoryOutlined
             color={Role == "supplier" ? "#834bff" : "primary"}
@@ -303,19 +310,17 @@ const AddProductWidget = ({ picturePath }) => {
         </Select>
       </Box>
 
-      <Divider sx={{ margin: "1.25rem 0" }}></Divider>
+      <Button
+        onClick={handleProduct}
+        variant="contained"
+        sx={{
+          borderRadius: "3rem",
+          padding: "1rem",
+        }}
+      >
+        POST Product
+      </Button>
 
-      <FlexBetween>
-        <Button
-          onClick={handleProduct}
-          variant="contained"
-          sx={{
-            borderRadius: "3rem",
-          }}
-        >
-          POST Product
-        </Button>
-      </FlexBetween>
       <Snackbar
         open={openSnackbar}
         autoHideDuration={6000}

@@ -29,9 +29,9 @@ const Marketplace = () => {
         >
           <Typography
             variant="h1"
-            color="primary"
+            color="text.primary"
             mb="2rem"
-            fontWeight={"bold"}
+            fontWeight={"medium"}
           >
             Marketplace
           </Typography>
