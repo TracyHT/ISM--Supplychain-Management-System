@@ -1,26 +1,39 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setProducts } from "../../state";
-import { Typography, Button, CircularProgress } from "@mui/material";
+import {
+  Typography,
+  Button,
+  CircularProgress,
+  Box,
+  useMediaQuery,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper,
+  IconButton,
+} from "@mui/material";
+import { Delete as DeleteIcon } from "@mui/icons-material";
 import Search from "../../components/Search";
 import Sort from "../../components/Sort";
 import Category from "../../components/Category";
-import { useMediaQuery } from "@mui/material";
-import { Box } from "@mui/material";
 import CustomPagination from "../../components/CustomPagination";
-import ProductWidget from "./ProductWidget";
-import Status from "../../components/Status";
+import { useNavigate } from "react-router-dom";
 
 const ProductsWidget = ({
   userId,
   isProfile = false,
   isBookedProducts = false,
+  defaultStatus = "",
 }) => {
   const dispatch = useDispatch();
   const products = useSelector((state) => state.products);
   const token = useSelector((state) => state.token);
   const Role = useSelector((state) => state.user.role);
-  const firstName = useSelector((state) => state.user.firstName);
+  const navigate = useNavigate();
   const [sort, setSort] = useState(
     JSON.parse(localStorage.getItem("productSort")) || {
       sort: "quantity",
@@ -29,9 +42,6 @@ const ProductsWidget = ({
   );
   const [filterCategory, setFilterCategory] = useState(
     JSON.parse(localStorage.getItem("productFilterCategory")) || []
-  );
-  const [filterStatus, setFilterStatus] = useState(
-    JSON.parse(localStorage.getItem("productFilterStatus")) || []
   );
   const [filterName, setFilterName] = useState(
     JSON.parse(localStorage.getItem("productFilterName")) || ""
@@ -44,123 +54,172 @@ const ProductsWidget = ({
   const [loading, setLoading] = useState(true);
 
   const clearFilters = () => {
-    setFilterCategory([]); // Clear filterTheme state
-    setFilterStatus([]);
-    setFilterName(""); // Optionally clear location filter as well
-    setPage(1); // Reset page to 1 when filters are cleared
-    localStorage.removeItem("productFilterCategory"); // Remove stored filterTheme from localStorage
-    localStorage.removeItem("productFilterName"); // Optionally remove stored filterLocation as well
-    localStorage.removeItem("productFilterStatus"); // Remove stored filterTheme from localStorage
+    setFilterCategory([]);
+    setFilterName("");
+    setPage(1);
+    localStorage.removeItem("productFilterCategory");
+    localStorage.removeItem("productFilterName");
   };
+
+  const columns = [
+    { label: "NAME", accessor: "name", show: true },
+    { label: "CATEGORY", accessor: "category", show: true },
+    { label: "PRICE", accessor: "price", show: true },
+    { label: "QUANTITY", accessor: "quantity", show: true },
+    {
+      label: "MIN QTY",
+      accessor: "minQuantity",
+      show: !(Role === "employee" && defaultStatus === "Inventory"),
+    },
+    { label: "MAX QTY", accessor: "maxQuantity", show: true },
+    {
+      label: "REORDER POINT",
+      accessor: "reorderPoint",
+      show: !(Role === "employee" && defaultStatus === "Marketplace"),
+    },
+    {
+      label: "ACTION",
+      accessor: "actions",
+      show:
+        (Role === "employee" && defaultStatus === "Inventory") ||
+        (Role === "supplier" && defaultStatus === "Marketplace"),
+    },
+  ];
+
+  const visibleColumns = columns.filter((column) => column.show);
 
   useEffect(() => {
     const getProducts = async () => {
       try {
-        setLoading(true); // Start loading
+        setLoading(true);
         const filterCategoryString = filterCategory.join(",");
-        const filterStatusString = filterStatus.join(",");
+        const baseUrl =
+          defaultStatus === "Marketplace"
+            ? "http://localhost:6001/products"
+            : `http://localhost:6001/inventory/${userId}/inventory`;
 
+        const queryParams = `?page=${page}&sort=${sort.sort},${sort.order}&category=${filterCategoryString}&search=${search}&name=${filterName}`;
+        const response = await fetch(`${baseUrl}${queryParams}`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json();
+        dispatch(setProducts({ products: data }));
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setLoading(false);
+      }
+    };
+
+    const getSupplierProduct = async () => {
+      try {
+        setLoading(true);
+        const filterCategoryString = filterCategory.join(",");
+        const baseUrl = `http://localhost:6001/products/${userId}/products`;
+        const queryParams = `?page=${page}&sort=${sort.sort},${sort.order}&category=${filterCategoryString}&search=${search}&name=${filterName}`;
+        const response = await fetch(`${baseUrl}${queryParams}`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json();
+        dispatch(setProducts({ products: data }));
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setLoading(false);
+      }
+    };
+
+    const getBookedProducts = async () => {
+      try {
+        setLoading(true);
+        const filterCategoryString = filterCategory.join(",");
         const response = await fetch(
-          `http://localhost:6001/products?page=${page}&sort=${sort.sort},${sort.order}&category=${filterCategoryString}&status=${filterStatusString}&search=${search}&name=${filterName}`, // Include location in the API request
+          `http://localhost:6001/products/${userId}/bookedproducts?page=${page}&sort=${sort.sort},${sort.order}&category=${filterCategoryString}&search=${search}&name=${filterName}`,
           {
             method: "GET",
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-
         const data = await response.json();
-
         dispatch(setProducts({ products: data }));
-        setLoading(false); // End loading
+        setLoading(false);
       } catch (error) {
-        console.error("Error fetching products:", error);
-        setLoading(false); // End loading
+        console.error("Error fetching booked products:", error);
+        setLoading(false);
       }
     };
 
-    const getUserProducts = async () => {
-      setLoading(true); // Start loading
-      const filterCategoryString = filterCategory.join(",");
-      const response = await fetch(
-        `http://localhost:6001/products/${userId}/products?page=${page}&sort=${sort.sort},${sort.order}&category=${filterCategoryString}&search=${search}&name=${filterName}`,
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const data = await response.json();
-      dispatch(setProducts({ products: data }));
-      setLoading(false); // End loading
-    };
-
-    const getBookedProducts = async () => {
-      setLoading(true); // Start loading
-      const filterCategoryString = filterCategory.join(",");
-
-      const response = await fetch(
-        `http://localhost:6001/products/${userId}/bookedproducts?page=${page}&sort=${sort.sort},${sort.order}&category=${filterCategoryString}&search=${search}&name=${filterName}`,
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const data = await response.json();
-      dispatch(setProducts({ products: data }));
-      setLoading(false); // End loading
-    };
-
-    if (isProfile) {
-      getUserProducts();
+    if (Role === "supplier") {
+      getSupplierProduct();
+    } else if (
+      defaultStatus === "Marketplace" ||
+      defaultStatus === "Inventory"
+    ) {
+      getProducts();
     } else if (isBookedProducts) {
       getBookedProducts();
-    } else {
-      getProducts();
     }
   }, [
     sort,
     filterCategory,
-    filterStatus,
     filterName,
     page,
     search,
     userId,
     isProfile,
     token,
+    defaultStatus,
   ]);
 
   const handleSortChange = (newSort) => {
     setSort(newSort);
-    setPage(1); // Reset page to 1 when sorting changes
+    setPage(1);
     localStorage.setItem("productSort", JSON.stringify(newSort));
   };
 
   const handleFilterCategoryChange = (newFilterCategory) => {
     setFilterCategory(newFilterCategory);
-    setPage(1); // Reset page to 1 when filter changes
+    setPage(1);
     localStorage.setItem(
       "productFilterCategory",
       JSON.stringify(newFilterCategory)
     );
   };
 
-  const handleFilterStatusChange = (newFilterStatus) => {
-    setFilterStatus(newFilterStatus);
-    setPage(1); // Reset page to 1 when filter changes
-    localStorage.setItem(
-      "productFilterStatus",
-      JSON.stringify(newFilterStatus)
-    );
-  };
-
   const handleFilterNameChange = (newProductName) => {
     setFilterName(newProductName);
-    setPage(1); // Reset page to 1 when location filter changes
+    setPage(1);
     localStorage.setItem("productFilterName", JSON.stringify(newProductName));
   };
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
     localStorage.setItem("productPage", newPage);
+  };
+
+  const handleViewDetails = (productId) =>
+    navigate(`/products/${productId}/product`);
+
+  const handleDeleteProduct = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:6001/products/${productUserId}/${productId}/delete`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const result = await response.json();
+      dispatch(setProduct({ product: result }));
+      navigate("/delete");
+    } catch (error) {
+      console.error("Failed to delete product:", error);
+    }
   };
 
   return (
@@ -178,156 +237,111 @@ const ProductsWidget = ({
         <Box>
           {/* Filters */}
           <Box mt={3}>
-            <Box display={"flex"} gap={isNonMobile ? 7 : 2}>
-              <Box>
-                <Sort sort={sort} setSort={handleSortChange} />
-              </Box>
-              <Box textAlign={"center"}>
-                {Role == "employee" ? (
-                  <>
-                    <Typography
-                      fontSize={isNonMobile ? "2rem" : "1rem"}
-                      color={"primary"}
-                    >
-                      {" "}
-                      Welcome !{" "}
-                    </Typography>
-                    <Typography
-                      fontSize={isNonMobile ? "3rem" : "2rem"}
-                      color={"primary"}
-                      fontWeight={"bold"}
-                    >
-                      {firstName}{" "}
-                    </Typography>
-                  </>
-                ) : (
-                  <>
-                    <Typography
-                      fontSize={isNonMobile ? "2rem" : "1rem"}
-                      color={"#834bff"}
-                    >
-                      {" "}
-                      Welcome !{" "}
-                    </Typography>
-                    <Typography
-                      fontSize={isNonMobile ? "3rem" : "2rem"}
-                      color={"#834bff"}
-                      fontWeight={"bold"}
-                    >
-                      {firstName}{" "}
-                    </Typography>
-                  </>
-                )}
-              </Box>
+            <Box display="flex" gap={isNonMobile ? 7 : 2}>
+              <Sort sort={sort} setSort={handleSortChange} />
             </Box>
-            <Box mt={2}>
-              {/* First row of search inputs */}
-              <Box display="flex" gap={2} mb={2}>
-                <Search
-                  value={filterName}
-                  onChange={handleFilterNameChange}
-                  placeholder="Search by Product Name"
-                />
-              </Box>
+
+            <Box mt={2} display="flex" gap={2}>
+              <Search
+                value={filterName}
+                onChange={handleFilterNameChange}
+                placeholder="Search by Product Name"
+              />
             </Box>
 
             <Box mt={2}>
               <Category
                 filterCategory={filterCategory}
-                category={products.category ? products.category : []}
+                category={products.category || []}
                 setFilterCategory={handleFilterCategoryChange}
               />
             </Box>
-            {Role == "employee" && !isBookedProducts && (
-              <Box mt={2}>
-                <Status
-                  filterStatus={filterStatus}
-                  status={products.status ? products.status : []}
-                  setFilterStatus={handleFilterStatusChange}
-                />
-              </Box>
-            )}
 
             <Box mt={2}>
-              {Role === "employee" ? (
-                <Button variant="outlined" onClick={clearFilters}>
-                  <Typography fontSize={"1rem"}> Clear Filters</Typography>
-                </Button>
-              ) : (
-                <Button
-                  variant="outlined"
-                  sx={{
-                    fontSize: "1.25rem", // Change font size here
-                    padding: "12px 24px",
-                    color: "#834bff",
-                    borderColor: "#834bff",
-                    "&:hover": {
-                      color: "#fff", // Change text color on hover
-                      backgroundColor: "#834bff", // Change background color on hover
-                      borderColor: "#834bff", // Change border color on hover
-                    },
-                  }}
-                  onClick={clearFilters}
-                >
-                  <Typography fontSize={"1rem"}> Clear Filters</Typography>
-                </Button>
-              )}
-            </Box>
-            {!isBookedProducts && (
-              <Typography
-                mt={"1rem"}
-                fontSize={isNonMobile ? "3rem" : "1rem"}
-                color={Role === "supplier" ? "#834bff" : "primary"}
+              <Button
+                variant="outlined"
+                onClick={clearFilters}
+                sx={
+                  Role === "employee"
+                    ? {}
+                    : {
+                        fontSize: "1.25rem",
+                        padding: "12px 24px",
+                        color: "#834bff",
+                        borderColor: "#834bff",
+                        "&:hover": {
+                          color: "#fff",
+                          backgroundColor: "#834bff",
+                          borderColor: "#834bff",
+                        },
+                      }
+                }
               >
-                {Role === "supplier"
-                  ? "Your Products"
-                  : "Products in Inventory"}
-              </Typography>
-            )}
-          </Box>
-          {/* Product Listings */}
-          <Box>
-            {Array.isArray(products.products) &&
-              products.products.map(
-                ({
-                  _id,
-                  userId,
-                  name,
-                  description,
-                  price,
-                  quantity,
-                  minQuantity,
-                  reorderPoint,
-                  maxQuantity,
-                  category,
-                  status,
-                  bookings,
-                }) => (
-                  <ProductWidget
-                    key={_id}
-                    productId={_id}
-                    productUserId={userId}
-                    name={name}
-                    description={description}
-                    price={price}
-                    quantity={quantity}
-                    minQuantity={minQuantity}
-                    reorderPoint={reorderPoint}
-                    maxQuantity={maxQuantity}
-                    status={status}
-                    category={category}
-                    bookings={bookings}
-                  />
-                )
-              )}
-            <Box display={"flex"} justifyContent={"center"}>
-              <CustomPagination
-                page={page}
-                limit={products.limit ? products.limit : 0}
-                total={products.total ? products.total : 0}
-                setPage={handlePageChange}
-              />
+                <Typography fontSize="1rem">Clear Filters</Typography>
+              </Button>
             </Box>
+          </Box>
+
+          {/* Table Display */}
+          <TableContainer component={Paper} sx={{ mt: 3 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  {visibleColumns.map((column) => (
+                    <TableCell
+                      key={column.accessor}
+                      sx={{ color: "text.secondary" }}
+                    >
+                      {column.label}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {products.products?.map((product) => (
+                  <TableRow key={product._id}>
+                    {visibleColumns.map((column) => (
+                      <TableCell key={column.accessor}>
+                        {column.accessor === "name" ? (
+                          <Typography
+                            sx={{
+                              cursor: "pointer",
+                              "&:hover": { textDecoration: "underline" },
+                            }}
+                            onClick={() => handleViewDetails(product._id)}
+                          >
+                            {product.name}
+                          </Typography>
+                        ) : column.accessor === "actions" ? (
+                          <IconButton
+                            onClick={() =>
+                              handleDeleteProduct(product._id, product.userId)
+                            }
+                            // color="error"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        ) : column.accessor === "price" ? (
+                          `$${product[column.accessor] || "N/A"}`
+                        ) : (
+                          product[column.accessor] || "N/A"
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          {/* Pagination */}
+          <Box display="flex" justifyContent="center" mt={4}>
+            <CustomPagination
+              page={page}
+              limit={products.limit || 0}
+              total={products.total || 0}
+              setPage={handlePageChange}
+            />
           </Box>
         </Box>
       )}

@@ -1,371 +1,315 @@
-import { Box, Typography } from "@mui/material";
-import FlexBetween from "../../components/FlexBetween";
-import WidgetWrapper from "../../components/WidgetWrapper";
+import {
+  Box,
+  Button,
+  Typography,
+  useMediaQuery,
+  TextField,
+} from "@mui/material";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@mui/material";
-import UserImage from "../../components/UserImage";
-import { useMediaQuery } from "@mui/material";
+import WidgetWrapper from "../../components/WidgetWrapper";
 import { setProduct } from "../../state";
 import BookedUserWidget from "./BookedUserWidget";
 
-const ProductDetailWidget = ({
-  productId,
-  productUserId,
-  name,
-  description,
-  price,
-  quantity,
-  minQuantity,
-  reorderPoint,
-  maxQuantity,
-  status,
-  category,
-  bookings,
-}) => {
+// Reusable component for rendering product detail rows
+const ProductDetailRow = ({ label, value, isNonMobileScreens }) => (
+  <Box
+    sx={{
+      borderRadius: "2rem",
+      padding: "1rem",
+      backgroundColor: "#2a2a2a",
+      mb: "1rem",
+      display: "flex",
+      alignItems: "center",
+    }}
+  >
+    <Typography
+      color="white"
+      variant="subtitle1"
+      width="180px"
+      fontWeight="500"
+    >
+      {label}:
+    </Typography>
+    <Typography
+      color="white"
+      variant="h6"
+      fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
+      fontWeight="bold"
+    >
+      {value}
+    </Typography>
+  </Box>
+);
+
+// Main ProductDetailWidget component
+const ProductDetailWidget = ({ productId }) => {
   const dispatch = useDispatch();
-  const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
   const navigate = useNavigate();
-  const token = useSelector((state) => state.token);
-  const role = useSelector((state) => state.user.role);
-  const loggedInUserId = useSelector((state) => state.user._id);
+  const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
+  const { token, user } = useSelector((state) => ({
+    token: state.token,
+    user: state.user,
+  }));
+  const { role, _id: loggedInUserId } = user || {}; // Safeguard for undefined user
+
+  // State to hold selected quantity and product data
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [productDetails, setProductDetails] = useState(null); // New state for fetched product
+
+  // Fetch the product details when productId changes
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:6001/products/${productId}/product`
+        );
+        const data = await response.json();
+
+        if (response.status === 200) {
+          setProductDetails(data);
+        } else {
+          alert("Error fetching product details: " + data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        alert("An error occurred while fetching the product.");
+      }
+    };
+
+    if (productId) {
+      fetchProduct();
+    }
+  }, [productId]);
+
+  // Return loading state if productDetails is null
+  if (!productDetails) {
+    return <Typography color="white">Loading product details...</Typography>;
+  }
+
+  const {
+    name,
+    description,
+    price,
+    quantity,
+    minQuantity,
+    reorderPoint,
+    maxQuantity,
+    status,
+    category,
+    bookings = {},
+    orders = [],
+  } = productDetails;
+
   const isBooked = Boolean(bookings[loggedInUserId]);
-  const bookingCount = Object.keys(bookings).length;
-  const userIds = Object.keys(bookings);
+  const orderCount = orders.length;
+  const orderIds = orders; // Array of order IDs (strings)
 
-  // Function to handle edit button click
-  const payProduct = () => {
-    // Redirect to edit form with event ID as URL parameter
-    navigate(`/pay`);
-  };
+  // Product details to display
 
-  console.log(productId);
-  const patchProduct = async () => {
-    const response = await fetch(
-      `http://localhost:6001/products/${productId}/booking`,
-      {
-        method: "PATCH",
+  // Handle order placement and booking (Employee)
+  const handleOrder = async () => {
+    // Validate selected quantity
+    if (selectedQuantity < 1 || selectedQuantity > quantity) {
+      alert("Please select a valid quantity between 1 and " + quantity);
+      return;
+    }
+
+    try {
+      // Step 1: Create the order
+      const orderResponse = await fetch("http://localhost:6001/orders", {
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId: loggedInUserId }),
+        body: JSON.stringify({
+          productId,
+          quantity: selectedQuantity,
+          pricePerUnit: price,
+        }),
+      });
+
+      if (orderResponse.status !== 201) {
+        const errorData = await orderResponse.json();
+        alert(errorData.message);
+        return;
       }
-    );
-    if (response.status === 400) {
-      // Backend returned a "No available seats" message
-      const data = await response.json();
-      alert(data.message);
-      return;
+
+      const orderData = await orderResponse.json();
+
+      // Step 2: Book the product
+      const bookResponse = await fetch(
+        `http://localhost:6001/products/${productId}/booking`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: loggedInUserId,
+            orderId: orderData.order._id, // Pass the newly created order ID
+          }),
+        }
+      );
+
+      if (bookResponse.status !== 200) {
+        const errorData = await bookResponse.json();
+        alert("Order placed, but failed to book product: " + errorData.message);
+        return;
+      }
+
+      const updatedProduct = await bookResponse.json();
+
+      console.log("Product booked successfully:", updatedProduct);
+
+      // Step 3: Update Redux store with the updated product
+      setProductDetails(updatedProduct);
+      dispatch(setProduct({ product: updatedProduct }));
+
+      alert("Order placed and product booked successfully!");
+    } catch (error) {
+      console.error("Error during order and booking process:", error);
+      alert("An error occurred while processing your request.");
     }
-    const updatedProduct = await response.json();
-    dispatch(setProduct({ product: updatedProduct }));
   };
+
+  const details = [
+    { label: "Description", value: description || "N/A" },
+    { label: "Price", value: price || "N/A" },
+    { label: "Quantity", value: quantity || "0" },
+    ...(minQuantity != null
+      ? [
+          { label: "Minimum Quantity", value: minQuantity },
+          { label: "Reorder Point", value: reorderPoint },
+          { label: "Maximum Quantity", value: maxQuantity },
+        ]
+      : []),
+    { label: "Category", value: category || "N/A" },
+  ];
+
+  // Return loading state if user is undefined
+  if (!user) {
+    return <Typography color="white">Loading user data...</Typography>;
+  }
 
   return (
     <Box
-      padding={"1.5rem 1.5rem 0.75rem 1.5rem"}
-      gap={"5rem"}
-      display={isNonMobileScreens ? "flex" : "block"}
+      sx={{
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+        flexDirection: isNonMobileScreens ? "row" : "column",
+        gap: "2rem",
+        padding: "1rem",
+      }}
     >
+      {/* Product Details Section */}
       <WidgetWrapper
-        mt="2rem"
-        width={isNonMobileScreens ? "60%" : "100%"}
-        p="2rem"
-        backgroundColor="#1a1a1a"
-        borderRadius="1.5rem"
-        boxShadow="0px 4px 12px rgba(0, 0, 0, 0.1)"
+        sx={{
+          width: isNonMobileScreens ? "800px" : "100%",
+          p: "2rem",
+          backgroundColor: "#1a1a1a",
+          borderRadius: "1.5rem",
+          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+        }}
       >
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          gap={isNonMobileScreens ? "2rem" : "1rem"}
-          mb="1rem"
-        >
+        {/* Product Name */}
+        <Box sx={{ display: "flex", justifyContent: "center", mb: "2rem" }}>
           <Typography
             fontSize={isNonMobileScreens ? "3rem" : "2rem"}
             color={role === "employee" ? "primary" : "#834bff"}
             fontWeight="bold"
+            textAlign="center"
           >
-            Product Details
+            {name || "Product"}
           </Typography>
         </Box>
 
-        <Box mt="1rem">
-          <Box
-            style={{
-              borderRadius: "2rem",
-              padding: "1rem",
-              backgroundColor: "#2a2a2a",
-              marginBottom: "1rem",
-            }}
-            display={"flex"}
-            alignItems={"center"}
-          >
-            <Typography color="white" variant="subtitle1" ml="0.3rem">
-              Product Name:
-            </Typography>
-            <Typography
-              ml="0.5rem"
-              color="white"
-              variant="h6"
-              fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
-              fontWeight="bold"
-            >
-              {name}
-            </Typography>
-          </Box>
-
-          <Box
-            style={{
-              borderRadius: "2rem",
-              padding: "1rem",
-              backgroundColor: "#2a2a2a",
-              marginBottom: "1rem",
-            }}
-            display={"flex"}
-            alignItems={"center"}
-          >
-            <Typography color="white" variant="subtitle1" ml="0.3rem">
-              Description:
-            </Typography>
-            <Typography
-              ml="0.5rem"
-              color="white"
-              variant="h6"
-              fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
-              fontWeight="bold"
-            >
-              {description}
-            </Typography>
-          </Box>
-
-          <Box
-            style={{
-              borderRadius: "2rem",
-              padding: "1rem",
-              backgroundColor: "#2a2a2a",
-              marginBottom: "1rem",
-            }}
-            display={"flex"}
-            alignItems={"center"}
-          >
-            <Typography color="white" variant="subtitle1" ml="0.3rem">
-              Price:
-            </Typography>
-            <Typography
-              ml="0.5rem"
-              color="white"
-              variant="h6"
-              fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
-              fontWeight="bold"
-            >
-              {price}
-            </Typography>
-          </Box>
-
-          <Box
-            style={{
-              borderRadius: "2rem",
-              padding: "1rem",
-              backgroundColor: "#2a2a2a",
-              marginBottom: "1rem",
-            }}
-            display={"flex"}
-            alignItems={"center"}
-          >
-            <Typography color="white" variant="subtitle1" ml="0.3rem">
-              Quantity:
-            </Typography>
-            <Typography
-              ml="0.5rem"
-              color="white"
-              variant="h6"
-              fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
-              fontWeight="bold"
-            >
-              {quantity}
-            </Typography>
-          </Box>
-
-          {minQuantity != null && (
-            <>
-              <Box
-                style={{
-                  borderRadius: "2rem",
-                  padding: "1rem",
-                  backgroundColor: "#2a2a2a",
-                  marginBottom: "1rem",
-                }}
-                display={"flex"}
-                alignItems={"center"}
-              >
-                <Typography color="white" variant="subtitle1" ml="0.3rem">
-                  Minimum Quantity:
-                </Typography>
-                <Typography
-                  ml="0.5rem"
-                  color="white"
-                  variant="h6"
-                  fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
-                  fontWeight="bold"
-                >
-                  {minQuantity}
-                </Typography>
-              </Box>
-
-              <Box
-                style={{
-                  borderRadius: "2rem",
-                  padding: "1rem",
-                  backgroundColor: "#2a2a2a",
-                  marginBottom: "1rem",
-                }}
-                display={"flex"}
-                alignItems={"center"}
-              >
-                <Typography color="white" variant="subtitle1" ml="0.3rem">
-                  Reorder Point:
-                </Typography>
-                <Typography
-                  ml="0.5rem"
-                  color="white"
-                  variant="h6"
-                  fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
-                  fontWeight="bold"
-                >
-                  {reorderPoint}
-                </Typography>
-              </Box>
-
-              <Box
-                style={{
-                  borderRadius: "2rem",
-                  padding: "1rem",
-                  backgroundColor: "#2a2a2a",
-                  marginBottom: "1rem",
-                }}
-                display={"flex"}
-                alignItems={"center"}
-              >
-                <Typography color="white" variant="subtitle1" ml="0.3rem">
-                  Maximum Quantity:
-                </Typography>
-                <Typography
-                  ml="0.5rem"
-                  color="white"
-                  variant="h6"
-                  fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
-                  fontWeight="bold"
-                >
-                  {maxQuantity}
-                </Typography>
-              </Box>
-            </>
-          )}
-
-          <Box
-            style={{
-              borderRadius: "2rem",
-              padding: "1rem",
-              backgroundColor: "#2a2a2a",
-              marginBottom: "1rem",
-            }}
-            display={"flex"}
-            alignItems={"center"}
-          >
-            <Typography color="white" variant="subtitle1" ml="0.3rem">
-              Category:
-            </Typography>
-            <Typography
-              ml="0.5rem"
-              color="white"
-              variant="h6"
-              fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
-              fontWeight="bold"
-            >
-              {category}
-            </Typography>
-          </Box>
+        {/* Product Details */}
+        <Box>
+          {details.map(({ label, value }) => (
+            <ProductDetailRow
+              key={label}
+              label={label}
+              value={value}
+              isNonMobileScreens={isNonMobileScreens}
+            />
+          ))}
         </Box>
 
-        {role === "employee" && status === "Marketplace" && (
-          <FlexBetween gap="0.3rem" mt="2rem">
-            <Button
-              onClick={patchProduct}
-              variant={isBooked ? "contained" : "outlined"}
-              color={isBooked ? "error" : "primary"}
-              sx={{
-                fontWeight: "bold",
-                padding: "0.8rem 2rem",
-                borderRadius: "1.5rem",
-              }}
-            >
-              {isBooked ? "Cancel Product" : "Order Product"}
-            </Button>
-            <Button
-              onClick={payProduct}
-              variant="contained"
-              color="success"
-              sx={{
-                fontWeight: "bold",
-                padding: "0.8rem 2rem",
-                borderRadius: "1.5rem",
-              }}
-            >
-              Pay
-            </Button>
-          </FlexBetween>
-        )}
-
-        {role === "supplier" && status === "Marketplace" && (
+        {/* Employee Actions */}
+        {role === "employee" && (
           <Box
-            style={{
-              borderRadius: "2rem",
-              padding: "1rem",
-              backgroundColor: "#2a2a2a",
-              marginTop: "1.5rem",
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "1rem",
+              mt: "2rem",
             }}
           >
-            <Typography color="white" variant="subtitle1" ml="0.3rem">
-              Orders for this Product:
-            </Typography>
-            <Typography
-              ml="0.5rem"
-              color="white"
-              variant="h6"
-              fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
-              fontWeight="bold"
+            <TextField
+              label="Quantity"
+              type="number"
+              value={selectedQuantity}
+              onChange={(e) => setSelectedQuantity(Number(e.target.value))}
+              inputProps={{
+                min: 1,
+                max: quantity || Infinity,
+              }}
+              sx={{
+                width: "100px",
+                backgroundColor: "#2a2a2a",
+                borderRadius: "0.5rem",
+                padding: "0.5rem",
+              }}
+            />
+            <Button
+              onClick={handleOrder}
+              variant="contained"
+              color="primary"
+              sx={{
+                fontWeight: "bold",
+                padding: "0.8rem 2rem",
+                borderRadius: "1.5rem",
+              }}
+              disabled={!token || !loggedInUserId}
             >
-              {bookingCount}
-            </Typography>
+              Order Product
+            </Button>
           </Box>
         )}
       </WidgetWrapper>
 
-      <Box>
-        {role === "supplier" && (
-          <>
-            <Typography
-              mt={"1rem"}
-              fontSize={isNonMobileScreens ? "2rem" : "1.5rem"}
-              color={"#834bff"}
-            >
-              {" "}
-              Ordered this Product :{" "}
-            </Typography>
-            {userIds.map((userId) => (
-              <Box key={userId} mt={"1rem"}>
-                <BookedUserWidget
-                  key={userId}
-                  userId={userId}
-                ></BookedUserWidget>
-              </Box>
+      {/* Supplier Order Info */}
+      {role === "supplier" && (
+        <Box
+          sx={{
+            mt: "1.5rem",
+          }}
+        >
+          <Typography color="white" variant="subtitle1" ml="0.3rem">
+            Orders for this Product:
+          </Typography>
+          <Typography
+            ml="0.5rem"
+            mb="1rem"
+            color="white"
+            variant="h6"
+            fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
+            fontWeight="bold"
+          >
+            {orderCount}
+          </Typography>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {orders.map((orderId) => (
+              <BookedUserWidget key={orderId} orderId={orderId} />
             ))}
-          </>
-        )}
-      </Box>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 };

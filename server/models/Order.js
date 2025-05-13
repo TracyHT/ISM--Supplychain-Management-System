@@ -3,8 +3,12 @@ import mongoose from "mongoose";
 const OrderSchema = new mongoose.Schema(
   {
     productId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       ref: "Product",
+      required: true,
+    },
+    employeeId: {
+      type: String,
       required: true,
     },
     quantity: {
@@ -12,21 +16,18 @@ const OrderSchema = new mongoose.Schema(
       required: true,
     },
     supplierId: String,
-    totalPrice: {
+    pricePerUnit: {
       type: Number,
       required: true,
     },
-    status: String,
+    status: {
+      type: String,
+      enum: ["pending", "confirmed", "rejected"],
+      default: "pending",
+    },
     orderDate: {
       type: Date,
       default: Date.now,
-    },
-    deliveryDate: {
-      type: Date,
-    },
-
-    trackingNumber: {
-      type: String,
     },
   },
   { timestamps: true }

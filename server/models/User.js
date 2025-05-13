@@ -28,6 +28,11 @@ const UserSchema = new mongoose.Schema(
       default: " ",
     },
 
+    balance: {
+      type: Number,
+      default: 0,
+    },
+
     role: String,
     location: String,
     employeeId: String,

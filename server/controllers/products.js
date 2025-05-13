@@ -47,7 +47,7 @@ export const createProduct = async (req, res) => {
 export const getFeedProducts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) - 1 || 0;
-    const limit = parseInt(req.query.limit) || 5;
+    const limit = parseInt(req.query.limit) || 6;
     const search = req.query.search || "";
     let sort = req.query.sort || "quantity";
     let category = req.query.category || "All";
@@ -134,7 +134,7 @@ export const getUserProducts = async (req, res) => {
     const categoryOptions = await Product.distinct("category");
 
     const page = parseInt(req.query.page) - 1 || 0;
-    const limit = parseInt(req.query.limit) || 5;
+    const limit = parseInt(req.query.limit) || 6;
     const search = req.query.search || "";
     let sort = req.query.sort || "quantity";
     let category = req.query.category || "All";
@@ -256,12 +256,15 @@ export const updateProduct = async (req, res) => {
 export const BookProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId } = req.body;
+    const { userId, orderId } = req.body;
     const product = await Product.findById(id);
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+
+    console.log("Product found:", product);
+    console.log(userId, orderId);
 
     const isBooked = product.bookings.get(userId);
 
@@ -271,11 +274,12 @@ export const BookProduct = async (req, res) => {
     } else {
       // User is not booked, so add the booking
       product.bookings.set(userId, true);
+      product.orders.push(orderId.toString());
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
-      { bookings: product.bookings },
+      { bookings: product.bookings, orders: product.orders },
       { new: true }
     );
 
@@ -290,7 +294,7 @@ export const getBookedProducts = async (req, res) => {
     const { userId } = req.params;
 
     const page = parseInt(req.query.page, 10) - 1 || 0;
-    const limit = parseInt(req.query.limit, 10) || 5;
+    const limit = parseInt(req.query.limit, 10) || 6;
     const search = req.query.search || "";
     let sort = req.query.sort || "quantity";
     let category = req.query.category || "All";
@@ -317,10 +321,6 @@ export const getBookedProducts = async (req, res) => {
     } else {
       sortBy[sort[0]] = "asc";
     }
-    // Construct the filter object for MongoDB query
-    let filter = {
-      [`bookings.${userId}`]: true, // Check if userId exists in the bookings map
-    };
 
     if (category.length > 0) {
       filter.category = { $in: category };

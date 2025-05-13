@@ -1,213 +1,178 @@
 import {
-  ManageAccountsOutlined,
-  EditOutlined,
-  LocationOnOutlined,
-  WorkOutlineOutlined,
-  PhoneInTalkOutlined,
-  PhoneOutlined,
-  Twitter,
-  LinkedIn,
-  EmailOutlined,
-  AccountCircle,
-  Fingerprint,
-} from "@mui/icons-material";
-import {
   Box,
   Typography,
-  Divider,
-  useTheme,
-  TextField,
   Button,
+  CircularProgress,
+  Chip,
+  Divider,
 } from "@mui/material";
-import UserImage from "../../components/UserImage";
-import FlexBetween from "../../components/FlexBetween";
-import WidgetWrapper from "../../components/WidgetWrapper";
-import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useMediaQuery } from "@mui/material";
+import { useSelector } from "react-redux";
 
-const BookedUserWidget = ({ userId }) => {
+const BookedUserWidget = ({ orderId }) => {
+  const { token } = useSelector((state) => state);
+  const [order, setOrder] = useState(null);
   const [user, setUser] = useState(null);
-  const [editMode, setEditMode] = useState(false); // State to toggle edit mode
-  const { palette } = useTheme();
-  const navigate = useNavigate();
-  const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
+  const [loading, setLoading] = useState(true);
+  const [confirming, setConfirming] = useState(false);
+  const [userError, setUserError] = useState(false);
 
-  const token = useSelector((state) => state.token);
-  const Role = useSelector((state) => state.user.role);
-  const loggedInUserId = useSelector((state) => state.user._id); // Assuming you have a way to get the logged-in user's ID
-  const dark = palette.neutral.dark;
-  const medium = palette.neutral.medium;
-  const main = palette.neutral.main;
-
-  const getUser = async () => {
-    const response = await fetch(`http://localhost:6001/users/${userId}`, {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await response.json();
-    setUser(data);
-  };
-
+  // Fetch order info
   useEffect(() => {
-    getUser();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const fetchOrder = async () => {
+      setLoading(true);
+      console.log("Fetching order with ID:", orderId);
+      try {
+        const res = await fetch(`http://localhost:6001/orders/${orderId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
 
-  if (!user) {
-    return null;
-  }
+        if (res.ok) {
+          setOrder(data);
+        } else {
+          console.error("Failed to load order:", data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching order:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrder();
+  }, [orderId, token]);
 
-  const handleEdit = () => {
-    setEditMode(true); // Enable edit mode
-  };
+  // Fetch user info based on order.employeeId
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!order?.employeeId) return;
+      try {
+        const res = await fetch(
+          `http://localhost:6001/users/${order.employeeId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const data = await res.json();
 
-  const handleSave = async () => {
-    // Send updated user details to backend for saving
+        if (res.ok) {
+          setUser(data);
+        } else {
+          console.warn("Failed to load user:", data.message);
+          setUserError(true);
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        setUserError(true);
+      }
+    };
+    fetchUser();
+  }, [order?.employeeId, token]);
+
+  const handleConfirm = async () => {
     try {
-      await fetch(
-        `https://intelligent-supplychain-management.onrender.com/users/${userId}`,
+      const res = await fetch(
+        `http://localhost:6001/orders/${orderId}/status`,
         {
-          method: "PATCH", // Use PATCH method for partial updates
+          method: "PATCH",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify(user), // Send updated user object
+          body: JSON.stringify({ status: "confirmed" }),
         }
       );
-      setEditMode(false); // Disable edit mode after saving
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Order confirmed!");
+        setConfirming(true);
+        setOrder((prev) => ({ ...prev, status: "confirmed" }));
+      } else {
+        alert(data.message || "Failed to confirm order");
+      }
     } catch (error) {
-      console.error("Error updating user details:", error);
+      console.error("Error confirming order:", error);
+      alert("An error occurred while confirming the order.");
+    } finally {
+      setConfirming(false);
     }
   };
 
-  const handleChange = (e) => {
-    setUser({
-      ...user,
-      [e.target.name]: e.target.value, // Update user state as user types
-    });
-  };
-
-  const {
-    firstName,
-    lastName,
-    picturePath,
-    role,
-    email,
-    employeeId,
-    phoneNumber,
-  } = user;
+  if (loading || !order) return <CircularProgress color="inherit" size={24} />;
 
   return (
-    <WidgetWrapper width={isNonMobileScreens ? "90%" : "100%"}>
-      {/* FIRST ROW */}
-      <FlexBetween
-        gap="0.5rem"
-        pb="1.1rem"
-        onClick={
-          Role === "employee" ? () => navigate(`/employee/${userId}`) : ""
-        }
+    <Box
+      sx={{
+        backgroundColor: "#1f1f1f",
+        borderRadius: "1rem",
+        padding: "1rem",
+        color: "white",
+      }}
+    >
+      {/* User Info */}
+      <Typography fontWeight="bold" fontSize="1.1rem" mb="0.3rem">
+        {console.log("User data:", user)}
+        {user
+          ? `${user.firstName} ${user.lastName} (${user.email})`
+          : userError
+          ? "User not found"
+          : "Loading user..."}
+      </Typography>
+
+      <Divider sx={{ my: "0.5rem", borderColor: "#333" }} />
+
+      {/* Order Info */}
+
+      <Box display="flex" justifyContent="space-between">
+        <Typography variant="body" color="gray">
+          Quantity:
+        </Typography>
+        <Typography variant="body">{order.quantity}</Typography>
+      </Box>
+
+      <Box display="flex" justifyContent="space-between">
+        <Typography variant="body" color="gray">
+          Price/Unit:
+        </Typography>
+        <Typography variant="body">${order.pricePerUnit.toFixed(2)}</Typography>
+      </Box>
+
+      <Box display="flex" justifyContent="space-between">
+        <Typography variant="body" color="gray">
+          Total:
+        </Typography>
+        <Typography variant="body" fontWeight="bold">
+          ${Number(order.quantity * order.pricePerUnit).toFixed(2)}
+        </Typography>
+      </Box>
+
+      <Box
+        mt={1}
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
       >
-        <FlexBetween gap="1rem">
-          <UserImage image={picturePath} />
-          <Box>
-            {!editMode ? ( // Display editable fields only if not in edit mode and if the logged-in user is viewing their own profile
-              <>
-                <Typography
-                  variant="h4"
-                  color={dark}
-                  fontWeight="500"
-                  sx={{
-                    "&:hover": {
-                      color: palette.primary.light,
-                      cursor: "pointer",
-                    },
-                  }}
-                >
-                  {firstName} {lastName}
-                </Typography>
-              </>
-            ) : (
-              <>
-                <TextField
-                  name="firstName"
-                  label="First Name"
-                  value={firstName}
-                  onChange={handleChange}
-                />
-                <TextField
-                  name="lastName"
-                  label="Last Name"
-                  value={lastName}
-                  onChange={handleChange}
-                />
-              </>
-            )}
-          </Box>
-        </FlexBetween>
-        {userId === loggedInUserId &&
-          !editMode && ( // Display edit button only if the logged-in user is viewing their own profile and if not in edit mode
-            <ManageAccountsOutlined onClick={handleEdit} />
-          )}
-        {editMode && (
-          <Button onClick={handleSave} variant="outlined">
-            Save
+        <Chip
+          label={order.status}
+          color={order.status === "confirmed" ? "success" : "warning"}
+          sx={{ fontWeight: "bold" }}
+        />
+        {order.status !== "confirmed" && (
+          <Button
+            variant="contained"
+            color="success"
+            size="small"
+            onClick={handleConfirm}
+            disabled={confirming}
+            sx={{ ml: "auto" }}
+          >
+            {confirming ? "Confirming..." : "Confirm"}
           </Button>
         )}
-      </FlexBetween>
-
-      <Divider />
-
-      {/* SECOND ROW */}
-      <Box p="1rem 0">
-        <Box display="flex" alignItems="center" gap="1rem" mb="0.5rem">
-          <AccountCircle fontSize="large" sx={{ color: main }}></AccountCircle>
-
-          <Typography color={medium}>{role}</Typography>
-        </Box>
-        <Box display="flex" alignItems="center" gap="1rem" mb="0.5rem">
-          <PhoneOutlined fontSize="large" sx={{ color: main }} />
-          {!editMode ? (
-            <Typography color={medium}>{phoneNumber}</Typography>
-          ) : (
-            <TextField
-              name="phoneNumber"
-              label="Phone Number"
-              value={phoneNumber}
-              onChange={handleChange}
-            />
-          )}
-        </Box>
-        <Box display="flex" alignItems="center" gap="1rem" mb="0.5rem">
-          <EmailOutlined fontSize="large" sx={{ color: main }} />
-          {!editMode ? (
-            <Typography color={medium}>{email}</Typography>
-          ) : (
-            <TextField
-              name="email"
-              label="Email"
-              value={email}
-              onChange={handleChange}
-            />
-          )}
-        </Box>
-
-        <Box display="flex" alignItems="center" gap="1rem" mb="0.5rem">
-          <Fingerprint fontSize="large" sx={{ color: main }}></Fingerprint>
-          {!editMode ? (
-            <Typography color={medium}>{employeeId}</Typography>
-          ) : (
-            <TextField
-              name="employeeId"
-              label="Employee Id"
-              value={employeeId}
-              onChange={handleChange}
-            />
-          )}
-        </Box>
       </Box>
-    </WidgetWrapper>
+    </Box>
   );
 };
 

@@ -682,7 +682,7 @@ const Form = () => {
 
           {/* BUTTONS */}
 
-          <Box>
+          <Box display={"flex"} flexDirection={"column"} gap={1}>
             {(isLogin ||
               isRegister ||
               isVerifyEmail ||
@@ -729,6 +729,7 @@ const Form = () => {
                   cursor: "pointer",
                   color: palette.primary.light,
                 },
+                textAlign: "center",
               }}
             >
               {isLogin
@@ -752,6 +753,7 @@ const Form = () => {
                     cursor: "pointer",
                     color: palette.primary.light,
                   },
+                  textAlign: "center",
                 }}
               >
                 Forgot Password?
