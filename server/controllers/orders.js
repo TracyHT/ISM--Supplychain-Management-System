@@ -137,12 +137,15 @@ export const updateOrderStatus = async (req, res) => {
 
       // 🔄 Update supplier balance
       const supplier = await User.findById(product.userId);
+      const employee = await User.findById(product.employeeId);
       if (!supplier) {
         return res.status(404).json({ message: "Supplier not found" });
       }
 
       supplier.balance += pricePerUnit * quantity;
+      employee.balance -= pricePerUnit * quantity;
       await supplier.save();
+      await employee.save();
       console.log(
         `Supplier balance updated: ${supplier.name}, new balance: ${supplier.balance}`
       );

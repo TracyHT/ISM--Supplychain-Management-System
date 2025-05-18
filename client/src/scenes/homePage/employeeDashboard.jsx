@@ -239,7 +239,7 @@ const EmployeeDashboard = () => {
                 barCategoryGap="15%"
               >
                 <CartesianGrid
-                  stroke={theme.palette.grey[600]}
+                  stroke={theme.palette.neutral.mediumMain}
                   strokeDasharray="3 3"
                 />
                 <XAxis
@@ -279,7 +279,7 @@ const EmployeeDashboard = () => {
                 />
                 <Bar
                   dataKey="quantity"
-                  fill={theme.palette.teal[700]}
+                  fill={theme.palette.neutral.mediumMain}
                   radius={[4, 4, 0, 0]}
                   activeBar={{
                     fill: theme.palette.primary.main,

@@ -172,6 +172,7 @@ const ProductsWidget = ({
     token,
     defaultStatus,
   ]);
+  const isInventory = defaultStatus === "Inventory";
 
   const handleSortChange = (newSort) => {
     setSort(newSort);
@@ -199,8 +200,11 @@ const ProductsWidget = ({
     localStorage.setItem("productPage", newPage);
   };
 
-  const handleViewDetails = (productId) =>
-    navigate(`/products/${productId}/product`);
+  const handleViewDetails = (productId) => {
+    if (defaultStatus === "Marketplace")
+      navigate(`/products/${productId}/product`);
+    else navigate(`/inventory/${productId}/inventory`);
+  };
 
   const handleDeleteProduct = async () => {
     try {
@@ -261,21 +265,24 @@ const ProductsWidget = ({
               <Button
                 variant="outlined"
                 onClick={clearFilters}
-                sx={
-                  Role === "employee"
-                    ? {}
-                    : {
-                        fontSize: "1.25rem",
-                        padding: "12px 24px",
-                        color: "#834bff",
-                        borderColor: "#834bff",
-                        "&:hover": {
-                          color: "#fff",
-                          backgroundColor: "#834bff",
-                          borderColor: "#834bff",
-                        },
-                      }
-                }
+                sx={{
+                  padding: "0.5rem 1rem",
+                }}
+                // sx={
+                //   Role === "employee"
+                //     ? {}
+                //     : {
+                //         fontSize: "1.25rem",
+                //         padding: "12px 24px",
+                //         color: "#834bff",
+                //         borderColor: "#834bff",
+                //         "&:hover": {
+                //           color: "#fff",
+                //           backgroundColor: "#834bff",
+                //           borderColor: "#834bff",
+                //         },
+                //       }
+                // }
               >
                 <Typography fontSize="1rem">Clear Filters</Typography>
               </Button>

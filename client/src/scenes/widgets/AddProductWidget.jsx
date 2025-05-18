@@ -7,6 +7,7 @@ import {
   MonitorWeight,
   Scale,
   CategoryOutlined,
+  InsertLink,
 } from "@mui/icons-material";
 import {
   Box,
@@ -40,6 +41,7 @@ const AddProductWidget = ({ picturePath }) => {
   const [maxQuantity, setMaxQuantity] = useState("");
   const [reorderPoint, setReorderPoint] = useState("");
   const [category, setCategory] = useState("");
+  const [imgUrl, setImgUrl] = useState("");
   const [status, setStatus] = useState("");
   const { _id } = useSelector((state) => state.user);
   const Role = useSelector((state) => state.user.role);
@@ -70,6 +72,7 @@ const AddProductWidget = ({ picturePath }) => {
     formData.append("maxQuantity", maxQuantity);
     formData.append("status", status);
     formData.append("category", category);
+    formData.append("imgUrl", imgUrl);
 
     const response = await fetch(`http://localhost:6001/products`, {
       method: "POST",
@@ -91,6 +94,7 @@ const AddProductWidget = ({ picturePath }) => {
       setReorderPoint("");
       setQuantity("");
       setStatus("");
+      setImgUrl("");
       handleSnackbarOpen();
     } else {
       console.error("Product creation failed", products);
@@ -143,7 +147,7 @@ const AddProductWidget = ({ picturePath }) => {
         display="flex"
         alignItems="center"
         marginBottom="1rem"
-        marginTop={"2rem"}
+        marginTop="1.5rem"
       >
         <Box>
           {" "}
@@ -213,6 +217,25 @@ const AddProductWidget = ({ picturePath }) => {
           placeholder="write down Price"
           onChange={(e) => setPrice(e.target.value)}
           value={price}
+          sx={{ marginLeft: "1rem" }}
+        />
+      </Box>
+
+      <Box display="flex" alignItems="center" marginBottom="1rem">
+        <Box>
+          {" "}
+          <InsertLink
+            color={Role == "supplier" ? "#834bff" : "primary"}
+            fontSize="large"
+          />
+        </Box>
+        <TextField
+          multiline
+          fullWidth
+          label="Image Link"
+          placeholder="Link to product image"
+          onChange={(e) => setImgUrl(e.target.value)}
+          value={imgUrl}
           sx={{ marginLeft: "1rem" }}
         />
       </Box>

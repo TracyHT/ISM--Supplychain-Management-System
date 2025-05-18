@@ -112,7 +112,7 @@ export const themeSettings = (mode) => {
             neutral: {
               dark: colorTokens.grey[100],
               main: colorTokens.grey[200],
-              mediumMain: colorTokens.grey[300],
+              mediumMain: colorTokens.grey[600],
               medium: colorTokens.grey[400],
               light: colorTokens.grey[700],
             },
@@ -163,14 +163,14 @@ export const themeSettings = (mode) => {
             neutral: {
               dark: colorTokens.grey[700],
               main: colorTokens.grey[500],
-              mediumMain: colorTokens.grey[400],
+              mediumMain: colorTokens.grey[200],
               medium: colorTokens.grey[300],
               light: colorTokens.grey[50],
             },
             background: {
-              default: colorTokens.grey[10],
+              default: colorTokens.grey[50],
               alt: colorTokens.grey[0],
-              paper: colorTokens.grey[100],
+              paper: colorTokens.grey[0],
             },
             success: {
               main: colorTokens.success[500],

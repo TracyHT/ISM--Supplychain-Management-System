@@ -154,6 +154,7 @@ const MobileMenuContent = ({
 
 const Navbar = ({ toggleSidebar }) => {
   const [isMobileMenuToggled, setIsMobileMenuToggled] = useState(false);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, role } = useSelector((state) => state);

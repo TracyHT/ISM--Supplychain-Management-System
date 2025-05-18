@@ -91,7 +91,7 @@ const StyledTextField = ({ sx, ...props }) => (
         "&.Mui-focused fieldset": { borderColor: "primary.main" },
       },
       "& .MuiInputLabel-root": { color: "text.secondary" },
-      "& input": { color: "white" },
+      "& input": { color: "text.secondary" },
       ...sx,
     }}
   />
