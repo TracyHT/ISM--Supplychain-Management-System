@@ -75,6 +75,7 @@ const BookedUserWidget = ({ orderId }) => {
 
   const handleConfirm = async () => {
     try {
+      console.log("Confirming order with ID:", orderId);
       const res = await fetch(
         `http://localhost:6001/orders/${orderId}/status`,
         {

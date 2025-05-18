@@ -65,13 +65,22 @@ const ProductsWidget = ({
     { label: "NAME", accessor: "name", show: true },
     { label: "CATEGORY", accessor: "category", show: true },
     { label: "PRICE", accessor: "price", show: true },
+    {
+      label: "SELL PRICE",
+      accessor: "sellingPrice",
+      show: defaultStatus === "Inventory",
+    },
     { label: "QUANTITY", accessor: "quantity", show: true },
     {
       label: "MIN QTY",
       accessor: "minQuantity",
       show: !(Role === "employee" && defaultStatus === "Inventory"),
     },
-    { label: "MAX QTY", accessor: "maxQuantity", show: true },
+    {
+      label: "SOLD",
+      accessor: "sold",
+      show: defaultStatus === "Inventory",
+    },
     {
       label: "REORDER POINT",
       accessor: "reorderPoint",
@@ -96,7 +105,7 @@ const ProductsWidget = ({
         const baseUrl =
           defaultStatus === "Marketplace"
             ? "http://localhost:6001/products"
-            : `http://localhost:6001/inventory/${userId}/inventory`;
+            : `http://localhost:6001/inventory/${userId}/inventories`;
 
         const queryParams = `?page=${page}&sort=${sort.sort},${sort.order}&category=${filterCategoryString}&search=${search}&name=${filterName}`;
         const response = await fetch(`${baseUrl}${queryParams}`, {
@@ -201,6 +210,7 @@ const ProductsWidget = ({
   };
 
   const handleViewDetails = (productId) => {
+    console.log(defaultStatus);
     if (defaultStatus === "Marketplace")
       navigate(`/products/${productId}/product`);
     else navigate(`/inventory/${productId}/inventory`);

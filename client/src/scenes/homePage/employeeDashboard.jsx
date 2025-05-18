@@ -106,7 +106,7 @@ const EmployeeDashboard = () => {
     const fetchInventory = async () => {
       try {
         const response = await fetch(
-          `http://localhost:6001/inventory/${_id}/inventory`
+          `http://localhost:6001/inventory/${_id}/inventories`
         );
         const data = await response.json();
         const grouped = data.products.reduce((acc, product) => {

@@ -149,6 +149,9 @@ export const updateOrderStatus = async (req, res) => {
       console.log(
         `Supplier balance updated: ${supplier.name}, new balance: ${supplier.balance}`
       );
+      console.log(
+        `Employee balance updated: ${employee.name}, new balance: ${employee.balance}`
+      );
     }
 
     res.status(200).json({ message: `Order ${status}`, order });
