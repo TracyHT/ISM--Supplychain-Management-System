@@ -1,7 +1,7 @@
 import { ResponsiveLine } from '@nivo/line';
 import { useTheme } from '@mui/material';
 
-const SalesLineChart = ({ data }) => {
+const SalesLineChart = ({ data, predictionType = "monthly" }) => {
   const theme = useTheme();
   const isLightMode = theme.palette.mode === 'light';
 
@@ -21,13 +21,12 @@ const SalesLineChart = ({ data }) => {
         reverse: false,
       }}
       axisTop={null}
-      axisRight={null}
-      axisBottom={{
+      axisRight={null} axisBottom={{
         orient: 'bottom',
         tickSize: 5,
         tickPadding: 15,
         tickRotation: 0,
-        legend: 'Month',
+        legend: predictionType === "monthly" ? "Month" : "Day",
         legendOffset: 50,
         legendPosition: 'middle',
         legendTextStyle: {
