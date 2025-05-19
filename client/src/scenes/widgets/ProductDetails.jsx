@@ -50,7 +50,7 @@ const ProductDetails = ({ productId, defaultStatus }) => {
             price: data.price || 0,
             quantity: data.quantity || 0,
             minQuantity: data.minQuantity || 0,
-            reorderPoint: data.reorderPoint || 0,
+
             maxQuantity: data.maxQuantity || 0,
             status: data.status || defaultStatus || "",
             category: data.category || "",
@@ -204,7 +204,6 @@ const ProductDetails = ({ productId, defaultStatus }) => {
     price,
     quantity,
     minQuantity,
-    reorderPoint,
     maxQuantity,
     status,
     category,
@@ -228,12 +227,6 @@ const ProductDetails = ({ productId, defaultStatus }) => {
       key: "minQuantity",
       editable: role === "supplier",
       visible: true,
-    },
-    {
-      label: "Reorder Point",
-      key: "reorderPoint",
-      editable: role === "supplier",
-      visible: role === "supplier",
     },
     {
       label: "Maximum Quantity",

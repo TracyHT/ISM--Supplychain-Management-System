@@ -6,7 +6,9 @@ import {
   TextField,
   useTheme,
   Grid,
+  Tooltip,
 } from "@mui/material";
+import { Warning } from "@mui/icons-material"; // Import Warning icon
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -136,6 +138,9 @@ const InventoryDetails = ({ productId }) => {
     { label: "Reorder Point", key: "reorderPoint", editable: true },
   ];
 
+  // Check if stock is below reorder point
+  const isLowStock = Number(quantity) < Number(reorderPoint);
+
   return (
     <Box
       sx={{
@@ -202,9 +207,22 @@ const InventoryDetails = ({ productId }) => {
           {detailFields.map(({ label, key, editable }) => (
             <Grid item xs={12} md={6} key={key}>
               <Box display="flex" flexDirection="column" mb="1rem">
-                <Typography color="text.secondary" variant="subtitle1">
-                  {label}
-                </Typography>
+                <Box display="flex" alignItems="center" gap="0.5rem">
+                  <Typography color="text.secondary" variant="subtitle1">
+                    {label}
+                  </Typography>
+                  {/* Add signifier for low stock on Available Stock */}
+                  {key === "quantity" && isLowStock && (
+                    <Tooltip title="Stock is below reorder point">
+                      <Warning
+                        sx={{
+                          color: theme.palette.warning.main,
+                          fontSize: "1.2rem",
+                        }}
+                      />
+                    </Tooltip>
+                  )}
+                </Box>
                 {isEditing && editable ? (
                   <TextField
                     type="number"
@@ -223,7 +241,6 @@ const InventoryDetails = ({ productId }) => {
         </Grid>
 
         {/* Edit / Save Buttons */}
-
         <Box display="flex" justifyContent="flex-end" gap="1rem">
           {isEditing ? (
             <>

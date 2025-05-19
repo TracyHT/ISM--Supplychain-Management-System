@@ -122,6 +122,7 @@ export const updateOrderStatus = async (req, res) => {
           quantity,
           category: product.category,
           price: pricePerUnit,
+          imgUrl: product.imgUrl,
           reorderPoint: 0,
         });
         await newInventoryItem.save();
