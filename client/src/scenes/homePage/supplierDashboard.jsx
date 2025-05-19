@@ -65,7 +65,7 @@ const EmployeeDashboard = () => {
   const { _id } = useSelector((state) => state.user);
   const { token } = useSelector((state) => state);
   const [user, setUser] = useState(null);
-  const [totalInventory, setTotalInventory] = useState(0);
+  const [totalProduct, setTotalProduct] = useState(0);
   const [inventoryByCategory, setInventoryByCategory] = useState([]);
   const theme = useTheme();
 
@@ -106,7 +106,7 @@ const EmployeeDashboard = () => {
     const fetchInventory = async () => {
       try {
         const response = await fetch(
-          `http://localhost:6001/inventory/${_id}/inventory`
+          `http://localhost:6001/products/${_id}/products`
         );
         const data = await response.json();
         const grouped = data.products.reduce((acc, product) => {
@@ -118,7 +118,7 @@ const EmployeeDashboard = () => {
           .map(([name, quantity]) => ({ name, quantity }))
           .sort((a, b) => a.name.localeCompare(b.name));
         setInventoryByCategory(chartFormatted);
-        setTotalInventory(data.products.length);
+        setTotalProduct(data.products.length);
       } catch (error) {
         console.error("Error fetching inventory:", error);
       }
@@ -146,11 +146,10 @@ const EmployeeDashboard = () => {
 
   const mockStats = [
     {
-      label: "TOTAL INVENTORY",
-      value: totalInventory,
+      label: "TOTAL PRODUCTS",
+      value: totalProduct,
       icon: <InventoryIcon />,
     },
-    { label: "LOW IN STOCK", value: 95, icon: <AutorenewIcon /> },
     { label: "PENDING ORDERS", value: 25, icon: <PendingActionsIcon /> },
     { label: "BALANCE", value: user?.balance, icon: <AttachMoneyIcon /> },
   ];

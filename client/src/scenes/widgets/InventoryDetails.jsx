@@ -8,7 +8,7 @@ import {
   Grid,
   Tooltip,
 } from "@mui/material";
-import { Warning } from "@mui/icons-material"; // Import Warning icon
+import { Warning } from "@mui/icons-material";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -33,12 +33,15 @@ const InventoryDetails = ({ productId }) => {
     const fetchProduct = async () => {
       try {
         const response = await fetch(
-          `http://localhost:6001/inventory/${productId}/inventory`
+          `http://localhost:6001/inventory/${productId}/inventory`,
+          {
+            headers: { Authorization: `Bearer ${token}` }, // Add Authorization header
+          }
         );
         const data = await response.json();
         if (response.status === 200) {
           setProductDetails(data);
-          setFormState(data); // initialize form state
+          setFormState(data);
         } else {
           alert("Error fetching product details: " + data.message);
         }
@@ -51,21 +54,32 @@ const InventoryDetails = ({ productId }) => {
     if (productId) {
       fetchProduct();
     }
-  }, [productId]);
+  }, [productId, token]);
 
   const handleChange = (field, value) => {
     if (field === "sold") {
-      const newSold = Number(value);
+      const newSold = Number(value) || 0;
       const originalSold = Number(productDetails.sold) || 0;
       const originalQuantity = Number(productDetails.quantity) || 0;
 
       // Calculate difference in sold amount
       const soldDiff = newSold - originalSold;
 
-      // New quantity should decrease by soldDiff, but not go below 0
-      let newQuantity = Number(formState.quantity) || originalQuantity;
-      newQuantity = newQuantity - soldDiff;
-      if (newQuantity < 0) newQuantity = 0;
+      // Calculate new quantity based on original quantity
+      let newQuantity = originalQuantity - (newSold - originalSold);
+      if (newQuantity < 0) {
+        // Prevent negative quantity
+        newQuantity = 0;
+        // Adjust newSold to max possible value
+        const maxSold = originalSold + originalQuantity;
+        setFormState((prev) => ({
+          ...prev,
+          sold: maxSold,
+          quantity: 0,
+        }));
+        alert("Sold amount cannot exceed available stock.");
+        return;
+      }
 
       setFormState((prev) => ({
         ...prev,
@@ -99,7 +113,7 @@ const InventoryDetails = ({ productId }) => {
       if (response.status === 200) {
         alert("Product updated successfully");
         setIsEditing(false);
-        setProductDetails(formState); // update displayed data
+        setProductDetails(formState);
       } else {
         alert("Error updating product: " + data.message);
       }
@@ -111,7 +125,7 @@ const InventoryDetails = ({ productId }) => {
 
   const handleCancel = () => {
     setIsEditing(false);
-    setFormState(productDetails); // reset form to original product details
+    setFormState(productDetails);
   };
 
   if (!productDetails || !user) {
@@ -138,7 +152,6 @@ const InventoryDetails = ({ productId }) => {
     { label: "Reorder Point", key: "reorderPoint", editable: true },
   ];
 
-  // Check if stock is below reorder point
   const isLowStock = Number(quantity) < Number(reorderPoint);
 
   return (
@@ -211,7 +224,6 @@ const InventoryDetails = ({ productId }) => {
                   <Typography color="text.secondary" variant="subtitle1">
                     {label}
                   </Typography>
-                  {/* Add signifier for low stock on Available Stock */}
                   {key === "quantity" && isLowStock && (
                     <Tooltip title="Stock is below reorder point">
                       <Warning

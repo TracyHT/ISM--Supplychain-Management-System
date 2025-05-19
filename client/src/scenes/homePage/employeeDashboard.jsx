@@ -52,8 +52,8 @@ const recentOrders = [
     amount: "$300",
   },
   {
-    name: 3,
-    orderId: "ORD003",
+    id: 3,
+    name: "ORD003",
     status: "Canceled",
     date: "2025-05-08",
     quantity: 2,
@@ -66,6 +66,7 @@ const EmployeeDashboard = () => {
   const { token } = useSelector((state) => state);
   const [user, setUser] = useState(null);
   const [totalInventory, setTotalInventory] = useState(0);
+  const [lowStockCount, setLowStockCount] = useState(0); // New state for low stock count
   const [inventoryByCategory, setInventoryByCategory] = useState([]);
   const theme = useTheme();
 
@@ -106,9 +107,24 @@ const EmployeeDashboard = () => {
     const fetchInventory = async () => {
       try {
         const response = await fetch(
-          `http://localhost:6001/inventory/${_id}/inventories`
+          `http://localhost:6001/inventory/${_id}/inventories`,
+          {
+            headers: { Authorization: `Bearer ${token}` }, // Add Authorization header
+          }
         );
         const data = await response.json();
+        // Calculate total inventory
+        setTotalInventory(data.products.length);
+        // Calculate low stock count
+        const lowStock = data.products.reduce(
+          (count, product) =>
+            Number(product.quantity) < Number(product.reorderPoint)
+              ? count + 1
+              : count,
+          0
+        );
+        setLowStockCount(lowStock);
+        // Group by category
         const grouped = data.products.reduce((acc, product) => {
           const category = product.category || "Uncategorized";
           acc[category] = (acc[category] || 0) + product.quantity;
@@ -118,14 +134,13 @@ const EmployeeDashboard = () => {
           .map(([name, quantity]) => ({ name, quantity }))
           .sort((a, b) => a.name.localeCompare(b.name));
         setInventoryByCategory(chartFormatted);
-        setTotalInventory(data.products.length);
       } catch (error) {
         console.error("Error fetching inventory:", error);
       }
     };
 
     fetchInventory();
-  }, [_id]);
+  }, [_id, token]); // Add token to dependencies
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -142,7 +157,7 @@ const EmployeeDashboard = () => {
     };
 
     fetchUser();
-  }, [_id]);
+  }, [_id, token]); // Add token to dependencies
 
   const mockStats = [
     {
@@ -150,7 +165,7 @@ const EmployeeDashboard = () => {
       value: totalInventory,
       icon: <InventoryIcon />,
     },
-    { label: "LOW IN STOCK", value: 95, icon: <AutorenewIcon /> },
+    { label: "LOW IN STOCK", value: lowStockCount, icon: <AutorenewIcon /> }, // Updated with lowStockCount
     { label: "PENDING ORDERS", value: 25, icon: <PendingActionsIcon /> },
     { label: "BALANCE", value: user?.balance, icon: <AttachMoneyIcon /> },
   ];
@@ -313,7 +328,9 @@ const EmployeeDashboard = () => {
               </TableHead>
               <TableBody>
                 {recentOrders.map((order) => (
-                  <TableRow key={order.name}>
+                  <TableRow key={order.id}>
+                    {" "}
+                    {/* Fixed key to use order.id */}
                     <TableCell>{order.name}</TableCell>
                     <TableCell>{order.status}</TableCell>
                     <TableCell>{order.date}</TableCell>
