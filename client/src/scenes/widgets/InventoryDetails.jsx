@@ -8,13 +8,12 @@ import {
   Grid,
 } from "@mui/material";
 import { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import WidgetWrapper from "../../components/WidgetWrapper";
 import placeholderImg from "../../assets/placeholderImg.png";
 
 const InventoryDetails = ({ productId }) => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
@@ -27,8 +26,6 @@ const InventoryDetails = ({ productId }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [productDetails, setProductDetails] = useState(null);
   const [formState, setFormState] = useState({});
-
-  const isEmployee = role === "employee";
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -55,10 +52,30 @@ const InventoryDetails = ({ productId }) => {
   }, [productId]);
 
   const handleChange = (field, value) => {
-    setFormState((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    if (field === "sold") {
+      const newSold = Number(value);
+      const originalSold = Number(productDetails.sold) || 0;
+      const originalQuantity = Number(productDetails.quantity) || 0;
+
+      // Calculate difference in sold amount
+      const soldDiff = newSold - originalSold;
+
+      // New quantity should decrease by soldDiff, but not go below 0
+      let newQuantity = Number(formState.quantity) || originalQuantity;
+      newQuantity = newQuantity - soldDiff;
+      if (newQuantity < 0) newQuantity = 0;
+
+      setFormState((prev) => ({
+        ...prev,
+        sold: newSold,
+        quantity: newQuantity,
+      }));
+    } else {
+      setFormState((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    }
   };
 
   const handleSave = async () => {
@@ -90,6 +107,11 @@ const InventoryDetails = ({ productId }) => {
     }
   };
 
+  const handleCancel = () => {
+    setIsEditing(false);
+    setFormState(productDetails); // reset form to original product details
+  };
+
   if (!productDetails || !user) {
     return <Typography color="white">Loading...</Typography>;
   }
@@ -110,7 +132,7 @@ const InventoryDetails = ({ productId }) => {
     { label: "Price", key: "price", editable: true },
     { label: "Selling Price", key: "sellingPrice", editable: true },
     { label: "Available Stock", key: "quantity", editable: false },
-    { label: "Sold", key: "minQuantity", editable: true },
+    { label: "Sold", key: "sold", editable: true },
     { label: "Reorder Point", key: "reorderPoint", editable: true },
   ];
 
@@ -208,7 +230,7 @@ const InventoryDetails = ({ productId }) => {
               <Button variant="contained" onClick={handleSave}>
                 Save
               </Button>
-              <Button onClick={() => setIsEditing(false)}>Cancel</Button>
+              <Button onClick={handleCancel}>Cancel</Button>
             </>
           ) : (
             <Button variant="outlined" onClick={() => setIsEditing(true)}>

@@ -7,15 +7,15 @@ import {
   useTheme,
   Grid,
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import WidgetWrapper from "../../components/WidgetWrapper";
 import { setProduct } from "../../state";
 import BookedUserWidget from "./BookedUserWidget";
 import placeholderImg from "../../assets/placeholderImg.png";
+import { memo } from "react";
 
-// Main ProductDetailWidget component
 const ProductDetails = ({ productId, defaultStatus }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -27,33 +27,12 @@ const ProductDetails = ({ productId, defaultStatus }) => {
   }));
   const { role, _id: loggedInUserId } = user || {};
 
+  const [isEditing, setIsEditing] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [productDetails, setProductDetails] = useState(null);
+  const [formState, setFormState] = useState({});
 
-  const ProductDetailItem = ({ label, value, isNonMobileScreens }) => (
-    <Box
-      sx={{
-        mb: "1rem",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-start",
-      }}
-    >
-      <Typography color="text.secondary" variant="subtitle1" width="180px">
-        {label}
-      </Typography>
-      <Typography
-        color="text.primary"
-        variant="h4"
-        fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
-        fontWeight="medium"
-      >
-        {value}
-      </Typography>
-    </Box>
-  );
-
-  // Fetch the product details when productId changes
+  // Fetch product details
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -64,6 +43,20 @@ const ProductDetails = ({ productId, defaultStatus }) => {
 
         if (response.status === 200) {
           setProductDetails(data);
+          setFormState({
+            ...data,
+            name: data.name || "",
+            description: data.description || "",
+            price: data.price || 0,
+            quantity: data.quantity || 0,
+            minQuantity: data.minQuantity || 0,
+            maxQuantity: data.maxQuantity || 0,
+            status: data.status || defaultStatus || "",
+            category: data.category || "",
+            bookings: data.bookings || {},
+            orders: data.orders || [],
+            imgUrl: data.imgUrl || "",
+          });
         } else {
           alert("Error fetching product details: " + data.message);
         }
@@ -76,43 +69,63 @@ const ProductDetails = ({ productId, defaultStatus }) => {
     if (productId) {
       fetchProduct();
     }
-  }, [productId]);
+  }, [productId, defaultStatus]);
 
-  // Return loading state if productDetails is null
-  if (!productDetails) {
-    return <Typography color="white">Loading product details...</Typography>;
-  }
+  // Handle form input changes
+  const handleChange = useCallback((field, value) => {
+    setFormState((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  }, []);
 
-  const {
-    name,
-    description,
-    price,
-    quantity,
-    minQuantity,
-    reorderPoint,
-    maxQuantity,
-    status,
-    category,
-    bookings = {},
-    orders = [],
-    imgUrl,
-  } = productDetails;
+  // Handle save action
+  const handleSave = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:6001/products/${productId}/update`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formState),
+        }
+      );
 
-  const isBooked = Boolean(bookings[loggedInUserId]);
-  const orderCount = orders.length;
+      const data = await response.json();
 
-  // Product details to display
+      if (response.status === 200) {
+        alert("Product updated successfully");
+        setIsEditing(false);
+        setProductDetails(formState);
+        dispatch(setProduct({ product: formState }));
+      } else {
+        alert("Error updating product: " + data.message);
+      }
+    } catch (err) {
+      console.error("Update error:", err);
+      alert("Failed to update product.");
+    }
+  };
+
+  // Handle cancel action
+  const handleCancel = () => {
+    setIsEditing(false);
+    setFormState(productDetails);
+  };
 
   // Handle order placement and booking (Employee)
   const handleOrder = async () => {
-    // Validate selected quantity
-    if (selectedQuantity < 1 || selectedQuantity > quantity) {
-      alert("Please select a valid quantity between 1 and " + quantity);
+    if (selectedQuantity < 1 || selectedQuantity > formState.quantity) {
+      alert(
+        "Please select a valid quantity between 1 and " + formState.quantity
+      );
       return;
     }
 
     try {
-      // Step 1: Create the order
       const orderResponse = await fetch("http://localhost:6001/orders", {
         method: "POST",
         headers: {
@@ -122,7 +135,7 @@ const ProductDetails = ({ productId, defaultStatus }) => {
         body: JSON.stringify({
           productId,
           quantity: selectedQuantity,
-          pricePerUnit: price,
+          pricePerUnit: formState.price,
         }),
       });
 
@@ -134,7 +147,6 @@ const ProductDetails = ({ productId, defaultStatus }) => {
 
       const orderData = await orderResponse.json();
 
-      // Step 2: Book the product
       const bookResponse = await fetch(
         `http://localhost:6001/products/${productId}/booking`,
         {
@@ -145,7 +157,7 @@ const ProductDetails = ({ productId, defaultStatus }) => {
           },
           body: JSON.stringify({
             userId: loggedInUserId,
-            orderId: orderData.order._id, // Pass the newly created order ID
+            orderId: orderData.order._id,
           }),
         }
       );
@@ -157,11 +169,8 @@ const ProductDetails = ({ productId, defaultStatus }) => {
       }
 
       const updatedProduct = await bookResponse.json();
-
-      console.log("Product booked successfully:", updatedProduct);
-
-      // Step 3: Update Redux store with the updated product
       setProductDetails(updatedProduct);
+      setFormState(updatedProduct);
       dispatch(setProduct({ product: updatedProduct }));
 
       alert("Order placed and product booked successfully!");
@@ -171,17 +180,88 @@ const ProductDetails = ({ productId, defaultStatus }) => {
     }
   };
 
-  const details = [
-    { label: "Available Stock", value: quantity || "0" },
-    { label: "Minimum Quantity", value: minQuantity },
-    { label: "Reorder Point", value: reorderPoint },
-    { label: "Maximum Quantity", value: maxQuantity },
+  if (!productDetails || !user) {
+    return <Typography color="white">Loading...</Typography>;
+  }
+
+  const {
+    name,
+    description,
+    price,
+    quantity,
+    minQuantity,
+
+    maxQuantity,
+    status,
+    category,
+    bookings = {},
+    orders = [],
+    imgUrl,
+  } = formState;
+
+  const isBooked = Boolean(bookings[loggedInUserId]);
+  const orderCount = orders.length;
+
+  // Define fields with visibility and editability rules
+  const detailFields = [
+    {
+      label: "Available Stock",
+      key: "quantity",
+      editable: role === "supplier",
+      visible: true,
+    },
+    {
+      label: "Minimum Quantity",
+      key: "minQuantity",
+      editable: role === "supplier",
+      visible: role === "supplier",
+    },
+
+    {
+      label: "Maximum Quantity",
+      key: "maxQuantity",
+      editable: role === "supplier",
+      visible: role === "supplier",
+    },
   ];
 
-  // Return loading state if user is undefined
-  if (!user) {
-    return <Typography color="white">Loading user data...</Typography>;
-  }
+  const ProductDetailItem = memo(
+    ({ label, value, field, editable, isNonMobileScreens }) => {
+      console.log(`Rendering ProductDetailItem for ${field}`); // For debugging
+      return (
+        <Box
+          sx={{
+            mb: "1rem",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+          }}
+        >
+          <Typography color="text.secondary" variant="subtitle1" width="180px">
+            {label}
+          </Typography>
+          {isEditing && editable && role === "supplier" ? (
+            <TextField
+              type="number"
+              value={formState[field] || ""}
+              onChange={(e) => handleChange(field, e.target.value)}
+              size="small"
+              sx={{ width: "150px" }}
+            />
+          ) : (
+            <Typography
+              color="text.primary"
+              variant="h4"
+              fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
+              fontWeight="medium"
+            >
+              {value || "0"}
+            </Typography>
+          )}
+        </Box>
+      );
+    }
+  );
 
   return (
     <Box
@@ -239,30 +319,65 @@ const ProductDetails = ({ productId, defaultStatus }) => {
           >
             {category}
           </Box>
-          <Typography variant="h2" color="text.primary" fontWeight="medium">
-            {name || "Product"}
-          </Typography>
-          <Typography variant="subtitle1" color="text.primary">
-            {description}
-          </Typography>
+          {isEditing && role === "supplier" ? (
+            <>
+              <TextField
+                label="Name"
+                value={formState.name || ""}
+                onChange={(e) => handleChange("name", e.target.value)}
+                size="small"
+              />
+              <TextField
+                label="Description"
+                value={formState.description || ""}
+                onChange={(e) => handleChange("description", e.target.value)}
+                size="small"
+                multiline
+                rows={3}
+              />
+            </>
+          ) : (
+            <>
+              <Typography variant="h2" color="text.primary" fontWeight="medium">
+                {name || "Product"}
+              </Typography>
+              <Typography variant="subtitle1" color="text.primary">
+                {description}
+              </Typography>
+            </>
+          )}
         </Box>
 
         {/* Price */}
-        <Typography variant="h3" color="text.primary" fontWeight="medium">
-          ${price}
-        </Typography>
+        {isEditing && role === "supplier" ? (
+          <TextField
+            label="Price"
+            type="number"
+            value={formState.price || ""}
+            onChange={(e) => handleChange("price", e.target.value)}
+            size="small"
+          />
+        ) : (
+          <Typography variant="h3" color="text.primary" fontWeight="medium">
+            ${price}
+          </Typography>
+        )}
 
         {/* Product Details Grid */}
         <Grid container spacing={2}>
-          {details.map(({ label, value }) => (
-            <Grid item xs={12} md={6} key={label}>
-              <ProductDetailItem
-                label={label}
-                value={value}
-                isNonMobileScreens={isNonMobileScreens}
-              />
-            </Grid>
-          ))}
+          {detailFields
+            .filter(({ visible }) => visible)
+            .map(({ label, key, editable }) => (
+              <Grid item xs={12} md={6} key={key}>
+                <ProductDetailItem
+                  label={label}
+                  value={formState[key]}
+                  field={key}
+                  editable={editable}
+                  isNonMobileScreens={isNonMobileScreens}
+                />
+              </Grid>
+            ))}
         </Grid>
 
         {/* Employee Actions */}
@@ -302,9 +417,27 @@ const ProductDetails = ({ productId, defaultStatus }) => {
             </Button>
           </Box>
         )}
+
+        {/* Supplier Actions */}
+        {role === "supplier" && (
+          <Box display="flex" justifyContent="flex-end" gap="1rem">
+            {isEditing ? (
+              <>
+                <Button variant="contained" onClick={handleSave}>
+                  Save
+                </Button>
+                <Button onClick={handleCancel}>Cancel</Button>
+              </>
+            ) : (
+              <Button variant="outlined" onClick={() => setIsEditing(true)}>
+                Edit
+              </Button>
+            )}
+          </Box>
+        )}
       </WidgetWrapper>
 
-      {/* Supplier Section */}
+      {/* Supplier Orders Section */}
       {role === "supplier" && (
         <Box>
           <Typography
