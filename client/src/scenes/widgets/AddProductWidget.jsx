@@ -7,6 +7,7 @@ import {
   MonitorWeight,
   Scale,
   CategoryOutlined,
+  InsertLink,
 } from "@mui/icons-material";
 import {
   Box,
@@ -40,6 +41,7 @@ const AddProductWidget = ({ picturePath }) => {
   const [maxQuantity, setMaxQuantity] = useState("");
   const [reorderPoint, setReorderPoint] = useState("");
   const [category, setCategory] = useState("");
+  const [imgUrl, setImgUrl] = useState("");
   const [status, setStatus] = useState("");
   const { _id } = useSelector((state) => state.user);
   const Role = useSelector((state) => state.user.role);
@@ -70,6 +72,7 @@ const AddProductWidget = ({ picturePath }) => {
     formData.append("maxQuantity", maxQuantity);
     formData.append("status", status);
     formData.append("category", category);
+    formData.append("imgUrl", imgUrl);
 
     const response = await fetch(`http://localhost:6001/products`, {
       method: "POST",
@@ -91,6 +94,7 @@ const AddProductWidget = ({ picturePath }) => {
       setReorderPoint("");
       setQuantity("");
       setStatus("");
+      setImgUrl("");
       handleSnackbarOpen();
     } else {
       console.error("Product creation failed", products);
@@ -118,25 +122,32 @@ const AddProductWidget = ({ picturePath }) => {
 
   console.log(name, category, price, quantity);
   return (
-    <WidgetWrapper width={isNonMobileScreens ? "50%" : "100%"}>
-      <Box display={"flex"} justifyContent="center" alignItems="center" gap={5}>
-        <UserImage image={picturePath}></UserImage>
-        {Role == "employee" ? (
-          <Typography fontSize={"3rem"} color={"primary"}>
-            Product Form
-          </Typography>
-        ) : (
-          <Typography fontSize={"3rem"} color={"#834bff"}>
-            Product Form
-          </Typography>
-        )}
+    <WidgetWrapper
+      width={isNonMobileScreens ? "50%" : "100%"}
+      display="flex"
+      flexDirection="column"
+    >
+      <Box
+        display={"flex"}
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
+        gap={1}
+      >
+        <Typography variant="h2" color="text.primary" fontWeight="medium">
+          Add A New Product
+        </Typography>
+
+        <Typography variant="body" color="text.secondary">
+          Please fill your product information to the form below.
+        </Typography>
       </Box>
 
       <Box
         display="flex"
         alignItems="center"
         marginBottom="1rem"
-        marginTop={"2rem"}
+        marginTop="1.5rem"
       >
         <Box>
           {" "}
@@ -210,6 +221,25 @@ const AddProductWidget = ({ picturePath }) => {
         />
       </Box>
 
+      <Box display="flex" alignItems="center" marginBottom="1rem">
+        <Box>
+          {" "}
+          <InsertLink
+            color={Role == "supplier" ? "#834bff" : "primary"}
+            fontSize="large"
+          />
+        </Box>
+        <TextField
+          multiline
+          fullWidth
+          label="Image Link"
+          placeholder="Link to product image"
+          onChange={(e) => setImgUrl(e.target.value)}
+          value={imgUrl}
+          sx={{ marginLeft: "1rem" }}
+        />
+      </Box>
+
       {Role == "employee" && (
         <Box display="flex" alignItems="center" marginBottom="1rem">
           <Box>
@@ -273,7 +303,7 @@ const AddProductWidget = ({ picturePath }) => {
         </Box>
       )}
 
-      <Box display="flex" alignItems="center" marginBottom="1rem">
+      <Box display="flex" alignItems="center" marginBottom="2rem">
         <Box>
           <CategoryOutlined
             color={Role == "supplier" ? "#834bff" : "primary"}
@@ -303,19 +333,17 @@ const AddProductWidget = ({ picturePath }) => {
         </Select>
       </Box>
 
-      <Divider sx={{ margin: "1.25rem 0" }}></Divider>
+      <Button
+        onClick={handleProduct}
+        variant="contained"
+        sx={{
+          borderRadius: "3rem",
+          padding: "1rem",
+        }}
+      >
+        POST Product
+      </Button>
 
-      <FlexBetween>
-        <Button
-          onClick={handleProduct}
-          variant="contained"
-          sx={{
-            borderRadius: "3rem",
-          }}
-        >
-          POST Product
-        </Button>
-      </FlexBetween>
       <Snackbar
         open={openSnackbar}
         autoHideDuration={6000}

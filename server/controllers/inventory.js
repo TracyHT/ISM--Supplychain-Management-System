@@ -199,7 +199,6 @@ export const deleteItem = async (req, res) => {
   }
 };
 
-/* UPDATE */
 export const updateItem = async (req, res) => {
   try {
     const { productId } = req.params; // Extract product ID from request parameters
@@ -210,7 +209,7 @@ export const updateItem = async (req, res) => {
 
     // Check if the product exists
     if (!item) {
-      return res.status(404).json({ message: "Item not found" });
+      return res.status(404).json({ message: "product not found" });
     }
 
     // Check if the logged-in user is the owner of the product
@@ -221,10 +220,8 @@ export const updateItem = async (req, res) => {
     // Save the updated product
     await item.save();
 
-    res
-      .status(200)
-      .json({ message: "Product details updated successfully", product });
+    res.status(200).json({ message: "Product details updated successfully" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "error here" });
   }
 };

@@ -15,6 +15,7 @@ export const createProduct = async (req, res) => {
       maxQuantity,
       category,
       status,
+      imgUrl,
     } = req.body;
     const user = await User.findById(userId);
     console.log("inside try");
@@ -30,6 +31,8 @@ export const createProduct = async (req, res) => {
       status,
       category,
       bookings: {},
+      orders: [],
+      imgUrl,
     });
     await newProduct.save();
     console.log("Saved Product");

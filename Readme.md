@@ -1,42 +1,115 @@
 # Supply Chain Management System
 
-## Features
+The **Supply Chain Management System** is a web-based application built using the **MERN stack** and **machine learning** to streamline supplier-employee interactions, inventory management, and demand forecasting.
 
-- **Supplier Marketplace**: Suppliers can list their products in a dedicated marketplace.
-- **Employee Purchase Portal**: Employees can browse and purchase products from the marketplace.
-- **Warehouse Inventory Management**: Employees can add purchased products to the warehouse inventory.
-- **Sales Prediction**: The system provides sales forecasts for products in the warehouse.
-- **Demand-based Purchasing**: Employees can make informed decisions on future purchases based on predicted demand.
+## ![Intelligent Supply Chain Management System](thumbnail.png)
 
-## How It Works
+## 📊 Core Modules
 
-1. **Supplier Listings**: Suppliers add their products to the marketplace.
-2. **Employee Purchases**: Employees browse the marketplace and purchase needed products.
-3. **Inventory Update**: Purchased products are added to the warehouse inventory.
-4. **Sales Prediction**: The system analyzes historical data to predict future sales for each product.
-5. **Demand Forecasting**: Based on predictions, the system suggests products that may need restocking.
-6. **Replenishment**: Employees can easily purchase predicted high-demand items if they're available in the marketplace.
+### 🛒 Supplier Marketplace
 
-## Technologies Used
+- Suppliers list products with name, description, price, and stock quantity.
+- Products are available for employees to browse and order.
 
-### Web Application (MERN Stack)
+### 📅 Employee Order Portal
 
-- MongoDB: Database
-- Express.js: Backend framework
-- React: Frontend library
-- Node.js: Runtime environment
+- Employees can browse the marketplace, place orders, and track statuses.
+
+### 🏢 Warehouse Inventory Management
+
+- Purchased products are added to inventory with quantity and sold details.
+- Low stock alerts appear when inventory falls below reorder thresholds.
+
+### 🧪 Sales and Demand Forecasting
+
+- ML models predict future sales using historical data.
+
+---
+
+## ⚖️ How It Works
+
+1. **Product Listing**: Suppliers add products with stock levels.
+2. **Order Placement**: Employees order items from the marketplace.
+3. **Order Confirmation**: Suppliers confirm orders, triggering inventory updates.
+4. **Inventory Management**: Products are added to and managed in inventory.
+5. **Sales Prediction**: Historical data is analyzed to forecast sales.
+
+---
+
+## 🛠️ Technologies Used
+
+### Web App (MERN)
+
+- **MongoDB**: NoSQL database
+- **Express.js**: Backend framework
+- **React**: Frontend UI
+- **Node.js**: Server environment
 
 ### Machine Learning
 
-- Flask: Web framework for ML model deployment
-- NumPy: Numerical computing library
-- Scikit-learn: Machine learning library
-- Pandas: Data manipulation and analysis
-- Jupyter Notebook: Interactive development environment
+- **Flask**: ML model deployment
+- **NumPy, Pandas**: Data analysis
+- **Scikit-learn**: ML algorithms
+- **Jupyter Notebook**: Model development
 
-### Testing
+### Testing Tools
 
-- Account:
-  - Employee: a@gmail.com password-123456
-  - Supplier: b@gmail.com password-123456
-- Link to the original project repository : https://github.com/akhil888binoy/Intelligent-Supplychain-Management-System.git
+- **Postman**: API testing
+- **MongoDB Compass**: DB inspection
+
+---
+
+## 📃 Setup Instructions
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/TracyHT/ISM--Supplychain-Management-System.git
+cd ISM--Supplychain-Management-System
+```
+
+### 2. Backend Setup
+
+```bash
+cd server
+npm install
+```
+
+Start server:
+
+```bash
+npm start
+```
+
+### 3. Frontend Setup
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+### 4. Machine Learning Setup
+
+Please follow the README.md inside "Sales Prediction Model" folder.
+
+---
+
+## 🔧 Testing
+
+### Test Accounts
+
+- **Employee**: `a@gmail.com`, Password: `123456`
+- **Supplier**: `b@gmail.com`, Password: `123456`
+
+### Instructions
+
+- **Login**: Use test accounts.
+- **Supplier**: Add products, confirm orders.
+- **Employee**: Order products, view dashboard stats, update inventory.
+
+---
+
+## 📚 Credits
+
+Based on the original project by Akhil Binoy: [Intelligent-Supplychain-Management-System](https://github.com/akhil888binoy/Intelligent-Supplychain-Management-System)

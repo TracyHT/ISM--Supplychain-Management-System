@@ -48,6 +48,13 @@ function App() {
             ></Route>
 
             <Route
+              path="/inventory/:productId/inventory"
+              element={
+                isAuth ? <ProductDetail></ProductDetail> : <Navigate to="/" />
+              }
+            ></Route>
+
+            <Route
               path="/pay"
               element={
                 isAuth ? <PaymentPage></PaymentPage> : <Navigate to="/" />

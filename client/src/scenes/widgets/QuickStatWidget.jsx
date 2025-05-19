@@ -1,15 +1,17 @@
 import React from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import { cloneElement } from "react";
 import WidgetWrapper from "../../components/WidgetWrapper";
 
 const QuickStatsWidget = ({ data }) => {
+  const theme = useTheme();
   return (
     <Box display="flex" gap={1.5}>
       {data.map((item, index) => (
         <WidgetWrapper
           key={index}
           elevation={3}
+          backgroundColor={theme.palette.background.alt}
           sx={{
             padding: "1.25rem 1.25rem",
             minWidth: "160px",

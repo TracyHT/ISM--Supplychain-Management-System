@@ -131,10 +131,10 @@ const PredictionPage = () => {
             <WidgetWrapper>
               <Typography
                 variant="h1"
-                fontWeight="bold"
+                fontWeight="medium"
                 mb={3}
                 textAlign="center"
-                color="primary"
+                color="text.primary"
               >
                 Sales Prediction Dashboard
               </Typography>

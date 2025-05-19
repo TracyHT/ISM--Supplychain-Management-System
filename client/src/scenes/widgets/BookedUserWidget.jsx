@@ -5,17 +5,21 @@ import {
   CircularProgress,
   Chip,
   Divider,
+  useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { updateUser } from "../../state";
 
 const BookedUserWidget = ({ orderId }) => {
   const { token } = useSelector((state) => state);
   const [order, setOrder] = useState(null);
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
   const [userError, setUserError] = useState(false);
+  const [user, setUser] = useState(null);
+  const theme = useTheme();
+  const dispatch = useDispatch();
 
   // Fetch order info
   useEffect(() => {
@@ -71,6 +75,7 @@ const BookedUserWidget = ({ orderId }) => {
 
   const handleConfirm = async () => {
     try {
+      console.log("Confirming order with ID:", orderId);
       const res = await fetch(
         `http://localhost:6001/orders/${orderId}/status`,
         {
@@ -87,6 +92,7 @@ const BookedUserWidget = ({ orderId }) => {
 
       if (res.ok) {
         alert("Order confirmed!");
+        setUser(user);
         setConfirming(true);
         setOrder((prev) => ({ ...prev, status: "confirmed" }));
       } else {
@@ -105,14 +111,15 @@ const BookedUserWidget = ({ orderId }) => {
   return (
     <Box
       sx={{
-        backgroundColor: "#1f1f1f",
+        backgroundColor: theme.palette.background.paper,
         borderRadius: "1rem",
         padding: "1rem",
-        color: "white",
+        color: "text.primary",
+        gap: "0.8rem",
       }}
     >
       {/* User Info */}
-      <Typography fontWeight="bold" fontSize="1.1rem" mb="0.3rem">
+      <Typography fontWeight="bold" fontSize="1.1rem" mb="0.5rem">
         {console.log("User data:", user)}
         {user
           ? `${user.firstName} ${user.lastName} (${user.email})`
@@ -121,7 +128,7 @@ const BookedUserWidget = ({ orderId }) => {
           : "Loading user..."}
       </Typography>
 
-      <Divider sx={{ my: "0.5rem", borderColor: "#333" }} />
+      <Divider sx={{ my: "0.5rem", borderColor: theme.palette.neutral.main }} />
 
       {/* Order Info */}
 

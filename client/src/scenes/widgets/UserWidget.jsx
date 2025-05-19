@@ -103,7 +103,7 @@ const UserWidget = ({ userId, picturePath }) => {
               <Typography
                 variant="h1"
                 color={Text.primary}
-                fontWeight="bold"
+                fontWeight="medium"
                 sx={{
                   "&:hover": {
                     color: palette.primary.dark,

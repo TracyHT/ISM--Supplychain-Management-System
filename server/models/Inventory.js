@@ -18,6 +18,9 @@ const InventorySchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  sellingPrice: {
+    type: Number,
+  },
   quantity: {
     type: Number,
     required: true,
@@ -25,9 +28,15 @@ const InventorySchema = new mongoose.Schema({
   reorderPoint: {
     type: Number,
   },
+  sold: {
+    type: Number,
+  },
   category: {
     type: String,
     required: true,
+  },
+  imgUrl: {
+    type: String,
   },
 });
 
