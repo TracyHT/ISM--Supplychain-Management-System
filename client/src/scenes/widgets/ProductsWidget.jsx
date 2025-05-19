@@ -22,6 +22,7 @@ import Sort from "../../components/Sort";
 import Category from "../../components/Category";
 import CustomPagination from "../../components/CustomPagination";
 import { useNavigate } from "react-router-dom";
+import placeholderImg from "../../assets/placeholderImg.png";
 
 const ProductsWidget = ({
   userId,
@@ -62,20 +63,35 @@ const ProductsWidget = ({
   };
 
   const columns = [
+    { label: "IMAGE", accessor: "imgUrl", show: true }, // New image column
     { label: "NAME", accessor: "name", show: true },
     { label: "CATEGORY", accessor: "category", show: true },
     { label: "PRICE", accessor: "price", show: true },
+    {
+      label: "SELL PRICE",
+      accessor: "sellingPrice",
+      show: defaultStatus === "Inventory",
+    },
     { label: "QUANTITY", accessor: "quantity", show: true },
     {
       label: "MIN QTY",
       accessor: "minQuantity",
       show: !(Role === "employee" && defaultStatus === "Inventory"),
     },
-    { label: "MAX QTY", accessor: "maxQuantity", show: true },
+    {
+      label: "SOLD",
+      accessor: "sold",
+      show: defaultStatus === "Inventory",
+    },
+    {
+      label: "ORDERS",
+      accessor: "orders.count",
+      show: Role === "supplier",
+    },
     {
       label: "REORDER POINT",
       accessor: "reorderPoint",
-      show: !(Role === "employee" && defaultStatus === "Marketplace"),
+      show: !(defaultStatus === "Marketplace"),
     },
     {
       label: "ACTION",
@@ -96,7 +112,7 @@ const ProductsWidget = ({
         const baseUrl =
           defaultStatus === "Marketplace"
             ? "http://localhost:6001/products"
-            : `http://localhost:6001/inventory/${userId}/inventory`;
+            : `http://localhost:6001/inventory/${userId}/inventories`;
 
         const queryParams = `?page=${page}&sort=${sort.sort},${sort.order}&category=${filterCategoryString}&search=${search}&name=${filterName}`;
         const response = await fetch(`${baseUrl}${queryParams}`, {
@@ -199,10 +215,13 @@ const ProductsWidget = ({
     localStorage.setItem("productPage", newPage);
   };
 
-  const handleViewDetails = (productId) =>
-    navigate(`/products/${productId}/product`);
+  const handleViewDetails = (productId) => {
+    if (defaultStatus === "Marketplace")
+      navigate(`/products/${productId}/product`);
+    else navigate(`/inventory/${productId}/inventory`);
+  };
 
-  const handleDeleteProduct = async () => {
+  const handleDeleteProduct = async (productId, productUserId) => {
     try {
       const response = await fetch(
         `http://localhost:6001/products/${productUserId}/${productId}/delete`,
@@ -215,7 +234,7 @@ const ProductsWidget = ({
         }
       );
       const result = await response.json();
-      dispatch(setProduct({ product: result }));
+      dispatch(setProducts({ products: result }));
       navigate("/delete");
     } catch (error) {
       console.error("Failed to delete product:", error);
@@ -261,21 +280,9 @@ const ProductsWidget = ({
               <Button
                 variant="outlined"
                 onClick={clearFilters}
-                sx={
-                  Role === "employee"
-                    ? {}
-                    : {
-                        fontSize: "1.25rem",
-                        padding: "12px 24px",
-                        color: "#834bff",
-                        borderColor: "#834bff",
-                        "&:hover": {
-                          color: "#fff",
-                          backgroundColor: "#834bff",
-                          borderColor: "#834bff",
-                        },
-                      }
-                }
+                sx={{
+                  padding: "0.5rem 1rem",
+                }}
               >
                 <Typography fontSize="1rem">Clear Filters</Typography>
               </Button>
@@ -302,7 +309,18 @@ const ProductsWidget = ({
                   <TableRow key={product._id}>
                     {visibleColumns.map((column) => (
                       <TableCell key={column.accessor}>
-                        {column.accessor === "name" ? (
+                        {column.accessor === "imgUrl" ? (
+                          <img
+                            src={product.imgUrl || placeholderImg}
+                            alt={product.name || "Product"}
+                            style={{
+                              width: "50px",
+                              height: "50px",
+                              objectFit: "cover",
+                              borderRadius: "4px",
+                            }}
+                          />
+                        ) : column.accessor === "name" ? (
                           <Typography
                             sx={{
                               cursor: "pointer",
@@ -317,12 +335,13 @@ const ProductsWidget = ({
                             onClick={() =>
                               handleDeleteProduct(product._id, product.userId)
                             }
-                            // color="error"
                           >
                             <DeleteIcon />
                           </IconButton>
                         ) : column.accessor === "price" ? (
                           `$${product[column.accessor] || "N/A"}`
+                        ) : column.accessor === "orders.count" ? (
+                          product.orders?.length || 0
                         ) : (
                           product[column.accessor] || "N/A"
                         )}

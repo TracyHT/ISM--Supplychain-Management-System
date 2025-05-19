@@ -5,27 +5,17 @@ const LoginPage = () => {
   const theme = useTheme();
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
   return (
-    <Box>
-      <Box
-        width="100%"
-        backgroundColor={theme.palette.background.alt}
-        p="1rem 6%"
-        textAlign="center"
-      >
-        <Typography fontWeight="bold" variant="h1" color="primary">
-          Supply Chain Management System
-        </Typography>
-      </Box>
-
-      <Box
-        width={isNonMobileScreens ? "35%" : "93%"}
-        p="2rem"
-        m="2rem auto"
-        borderRadius="1.5rem"
-        backgroundColor={theme.palette.background.alt}
-      >
-        <Form />
-      </Box>
+    <Box
+      maxWidth={isNonMobileScreens ? "65%" : "100%"}
+      bgcolor={theme.palette.background.alt}
+      p="2rem"
+      m="3rem"
+      borderRadius="12px"
+      boxShadow={3}
+      justifySelf="center"
+      alignSelf="center"
+    >
+      <Form />
     </Box>
   );
 };

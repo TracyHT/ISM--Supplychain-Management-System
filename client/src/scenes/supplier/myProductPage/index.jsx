@@ -29,9 +29,9 @@ const MyProduct = () => {
         >
           <Typography
             variant="h1"
-            color="#834bff"
+            color="primary"
             mb="2rem"
-            fontWeight={"bold"}
+            fontWeight={"medium"}
           >
             Your Products
           </Typography>

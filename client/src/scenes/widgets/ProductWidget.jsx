@@ -57,7 +57,10 @@ const ProductWidget = ({
   const isEmployee = role === "employee";
   const isInventory = defaultStatus === "Inventory";
 
-  const handleViewDetails = () => navigate(`/products/${productId}/product`);
+  const handleViewDetails = () => {
+    if (!isInventory) navigate(`/products/${productId}/product`);
+    else navigate(`/inventory/${productId}/inventory`);
+  };
 
   const handleDeleteProduct = async () => {
     try {
@@ -97,11 +100,11 @@ const ProductWidget = ({
       </Box>
       <Box my={3}>
         <Typography color="text.primary" variant="h2" fontWeight="bold">
-          {name}
+          {name} {isInventory}
         </Typography>
         <Typography
           color="text.primary"
-          variant="h5"
+          variant="subtitle1"
           sx={{ my: 1, opacity: 0.8 }}
         >
           {description}

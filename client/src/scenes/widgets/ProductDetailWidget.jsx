@@ -4,6 +4,8 @@ import {
   Typography,
   useMediaQuery,
   TextField,
+  useTheme,
+  Grid,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
@@ -11,52 +13,45 @@ import { useNavigate } from "react-router-dom";
 import WidgetWrapper from "../../components/WidgetWrapper";
 import { setProduct } from "../../state";
 import BookedUserWidget from "./BookedUserWidget";
-
-// Reusable component for rendering product detail rows
-const ProductDetailRow = ({ label, value, isNonMobileScreens }) => (
-  <Box
-    sx={{
-      borderRadius: "2rem",
-      padding: "1rem",
-      backgroundColor: "#2a2a2a",
-      mb: "1rem",
-      display: "flex",
-      alignItems: "center",
-    }}
-  >
-    <Typography
-      color="white"
-      variant="subtitle1"
-      width="180px"
-      fontWeight="500"
-    >
-      {label}:
-    </Typography>
-    <Typography
-      color="white"
-      variant="h6"
-      fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
-      fontWeight="bold"
-    >
-      {value}
-    </Typography>
-  </Box>
-);
+import placeholderImg from "../../assets/placeholderImg.png";
 
 // Main ProductDetailWidget component
-const ProductDetailWidget = ({ productId }) => {
+const ProductDetailWidget = ({ productId, defaultStatus }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const theme = useTheme();
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
   const { token, user } = useSelector((state) => ({
     token: state.token,
     user: state.user,
   }));
-  const { role, _id: loggedInUserId } = user || {}; // Safeguard for undefined user
+  const { role, _id: loggedInUserId } = user || {};
 
-  // State to hold selected quantity and product data
   const [selectedQuantity, setSelectedQuantity] = useState(1);
-  const [productDetails, setProductDetails] = useState(null); // New state for fetched product
+  const [productDetails, setProductDetails] = useState(null);
+
+  const ProductDetailItem = ({ label, value, isNonMobileScreens }) => (
+    <Box
+      sx={{
+        mb: "1rem",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+      }}
+    >
+      <Typography color="text.secondary" variant="subtitle1" width="180px">
+        {label}
+      </Typography>
+      <Typography
+        color="text.primary"
+        variant="h4"
+        fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
+        fontWeight="medium"
+      >
+        {value}
+      </Typography>
+    </Box>
+  );
 
   // Fetch the product details when productId changes
   useEffect(() => {
@@ -100,11 +95,11 @@ const ProductDetailWidget = ({ productId }) => {
     category,
     bookings = {},
     orders = [],
+    imgUrl,
   } = productDetails;
 
   const isBooked = Boolean(bookings[loggedInUserId]);
   const orderCount = orders.length;
-  const orderIds = orders; // Array of order IDs (strings)
 
   // Product details to display
 
@@ -177,17 +172,10 @@ const ProductDetailWidget = ({ productId }) => {
   };
 
   const details = [
-    { label: "Description", value: description || "N/A" },
-    { label: "Price", value: price || "N/A" },
-    { label: "Quantity", value: quantity || "0" },
-    ...(minQuantity != null
-      ? [
-          { label: "Minimum Quantity", value: minQuantity },
-          { label: "Reorder Point", value: reorderPoint },
-          { label: "Maximum Quantity", value: maxQuantity },
-        ]
-      : []),
-    { label: "Category", value: category || "N/A" },
+    { label: "Available Stock", value: quantity || "0" },
+    { label: "Minimum Quantity", value: minQuantity },
+    { label: "Reorder Point", value: reorderPoint },
+    { label: "Maximum Quantity", value: maxQuantity },
   ];
 
   // Return loading state if user is undefined
@@ -202,43 +190,80 @@ const ProductDetailWidget = ({ productId }) => {
         display: "flex",
         justifyContent: "center",
         flexDirection: isNonMobileScreens ? "row" : "column",
-        gap: "2rem",
-        padding: "1rem",
+        gap: "1rem",
+        padding: "1.5rem",
       }}
     >
+      {/* Image Section */}
+      <Box
+        sx={{
+          flexShrink: 0,
+          width: isNonMobileScreens ? "400px" : "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <img
+          src={imgUrl || placeholderImg}
+          alt="Auth Illustration"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            borderRadius: "12px",
+          }}
+        />
+      </Box>
+
       {/* Product Details Section */}
       <WidgetWrapper
         sx={{
-          width: isNonMobileScreens ? "800px" : "100%",
-          p: "2rem",
-          backgroundColor: "#1a1a1a",
-          borderRadius: "1.5rem",
-          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+          maxWidth: isNonMobileScreens ? "450px" : "100%",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1.5rem",
+          padding: "1.5rem",
         }}
       >
-        {/* Product Name */}
-        <Box sx={{ display: "flex", justifyContent: "center", mb: "2rem" }}>
-          <Typography
-            fontSize={isNonMobileScreens ? "3rem" : "2rem"}
-            color={role === "employee" ? "primary" : "#834bff"}
-            fontWeight="bold"
-            textAlign="center"
+        {/* Category, Name, Description */}
+        <Box display="flex" flexDirection="column" gap={1}>
+          <Box
+            sx={{
+              backgroundColor: theme.palette.neutral.mediumMain,
+              padding: "0.3rem 1rem",
+              fontSize: isNonMobileScreens ? "0.8rem" : "0.65rem",
+              borderRadius: "2rem",
+              width: "fit-content",
+            }}
           >
+            {category}
+          </Box>
+          <Typography variant="h2" color="text.primary" fontWeight="medium">
             {name || "Product"}
+          </Typography>
+          <Typography variant="subtitle1" color="text.primary">
+            {description}
           </Typography>
         </Box>
 
-        {/* Product Details */}
-        <Box>
+        {/* Price */}
+        <Typography variant="h3" color="text.primary" fontWeight="medium">
+          ${price}
+        </Typography>
+
+        {/* Product Details Grid */}
+        <Grid container spacing={2}>
           {details.map(({ label, value }) => (
-            <ProductDetailRow
-              key={label}
-              label={label}
-              value={value}
-              isNonMobileScreens={isNonMobileScreens}
-            />
+            <Grid item xs={12} md={6} key={label}>
+              <ProductDetailItem
+                label={label}
+                value={value}
+                isNonMobileScreens={isNonMobileScreens}
+              />
+            </Grid>
           ))}
-        </Box>
+        </Grid>
 
         {/* Employee Actions */}
         {role === "employee" && (
@@ -247,7 +272,7 @@ const ProductDetailWidget = ({ productId }) => {
               display: "flex",
               justifyContent: "center",
               gap: "1rem",
-              mt: "2rem",
+              mt: "1.5rem",
             }}
           >
             <TextField
@@ -255,15 +280,11 @@ const ProductDetailWidget = ({ productId }) => {
               type="number"
               value={selectedQuantity}
               onChange={(e) => setSelectedQuantity(Number(e.target.value))}
-              inputProps={{
-                min: 1,
-                max: quantity || Infinity,
-              }}
+              inputProps={{ min: 1, max: quantity || Infinity }}
               sx={{
                 width: "100px",
-                backgroundColor: "#2a2a2a",
+                backgroundColor: theme.palette.background.alt,
                 borderRadius: "0.5rem",
-                padding: "0.5rem",
               }}
             />
             <Button
@@ -272,7 +293,7 @@ const ProductDetailWidget = ({ productId }) => {
               color="primary"
               sx={{
                 fontWeight: "bold",
-                padding: "0.8rem 2rem",
+                padding: "0.5rem 2rem",
                 borderRadius: "1.5rem",
               }}
               disabled={!token || !loggedInUserId}
@@ -283,22 +304,22 @@ const ProductDetailWidget = ({ productId }) => {
         )}
       </WidgetWrapper>
 
-      {/* Supplier Order Info */}
+      {/* Supplier Section */}
       {role === "supplier" && (
-        <Box
-          sx={{
-            mt: "1.5rem",
-          }}
-        >
-          <Typography color="white" variant="subtitle1" ml="0.3rem">
-            Orders for this Product:
+        <Box>
+          <Typography
+            color="text.primary"
+            variant="h5"
+            ml="0.3rem"
+            fontWeight="medium"
+          >
+            Orders for this Product
           </Typography>
           <Typography
             ml="0.5rem"
             mb="1rem"
-            color="white"
-            variant="h6"
-            fontSize={isNonMobileScreens ? "1.2rem" : "1rem"}
+            color="text.primary"
+            variant="h2"
             fontWeight="bold"
           >
             {orderCount}

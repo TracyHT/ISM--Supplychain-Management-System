@@ -52,8 +52,8 @@ const recentOrders = [
     amount: "$300",
   },
   {
-    name: 3,
-    orderId: "ORD003",
+    id: 3,
+    name: "ORD003",
     status: "Canceled",
     date: "2025-05-08",
     quantity: 2,
@@ -66,6 +66,7 @@ const EmployeeDashboard = () => {
   const { token } = useSelector((state) => state);
   const [user, setUser] = useState(null);
   const [totalInventory, setTotalInventory] = useState(0);
+  const [lowStockCount, setLowStockCount] = useState(0); // New state for low stock count
   const [inventoryByCategory, setInventoryByCategory] = useState([]);
   const theme = useTheme();
 
@@ -106,9 +107,24 @@ const EmployeeDashboard = () => {
     const fetchInventory = async () => {
       try {
         const response = await fetch(
-          `http://localhost:6001/inventory/${_id}/inventory`
+          `http://localhost:6001/inventory/${_id}/inventories`,
+          {
+            headers: { Authorization: `Bearer ${token}` }, // Add Authorization header
+          }
         );
         const data = await response.json();
+        // Calculate total inventory
+        setTotalInventory(data.products.length);
+        // Calculate low stock count
+        const lowStock = data.products.reduce(
+          (count, product) =>
+            Number(product.quantity) < Number(product.reorderPoint)
+              ? count + 1
+              : count,
+          0
+        );
+        setLowStockCount(lowStock);
+        // Group by category
         const grouped = data.products.reduce((acc, product) => {
           const category = product.category || "Uncategorized";
           acc[category] = (acc[category] || 0) + product.quantity;
@@ -118,14 +134,13 @@ const EmployeeDashboard = () => {
           .map(([name, quantity]) => ({ name, quantity }))
           .sort((a, b) => a.name.localeCompare(b.name));
         setInventoryByCategory(chartFormatted);
-        setTotalInventory(data.products.length);
       } catch (error) {
         console.error("Error fetching inventory:", error);
       }
     };
 
     fetchInventory();
-  }, [_id]);
+  }, [_id, token]); // Add token to dependencies
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -142,7 +157,7 @@ const EmployeeDashboard = () => {
     };
 
     fetchUser();
-  }, [_id]);
+  }, [_id, token]); // Add token to dependencies
 
   const mockStats = [
     {
@@ -150,7 +165,7 @@ const EmployeeDashboard = () => {
       value: totalInventory,
       icon: <InventoryIcon />,
     },
-    { label: "LOW IN STOCK", value: 95, icon: <AutorenewIcon /> },
+    { label: "LOW IN STOCK", value: lowStockCount, icon: <AutorenewIcon /> }, // Updated with lowStockCount
     { label: "PENDING ORDERS", value: 25, icon: <PendingActionsIcon /> },
     { label: "BALANCE", value: user?.balance, icon: <AttachMoneyIcon /> },
   ];
@@ -159,7 +174,7 @@ const EmployeeDashboard = () => {
     <Box>
       {/* Quick Stats */}
       <Box width="100%" mb={4}>
-        <QuickStatsWidget data={mockStats} />
+        <QuickStatsWidget data={mockStats} elevation={2} />
       </Box>
 
       {/* Charts Section */}
@@ -169,7 +184,11 @@ const EmployeeDashboard = () => {
           <Typography variant="h5" fontWeight="bold" mb={2}>
             Orders by Status
           </Typography>
-          <Paper elevation={2} sx={{ p: 2, height: 350 }}>
+          <Paper
+            elevation={0}
+            backgroundColor={theme.palette.background.alt}
+            sx={{ p: 2, height: 350 }}
+          >
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -195,7 +214,7 @@ const EmployeeDashboard = () => {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: theme.palette.background.paper,
+                    backgroundColor: theme.palette.background.alt,
                     padding: "0.5rem",
                   }}
                   labelStyle={{ fontWeight: "bold" }}
@@ -223,7 +242,11 @@ const EmployeeDashboard = () => {
           <Typography variant="h5" fontWeight="bold" mb={2}>
             Inventory Overview by Category
           </Typography>
-          <Paper elevation={2} sx={{ p: 2, height: 350 }}>
+          <Paper
+            elevation={0}
+            backgroundColor={theme.palette.background.alt}
+            sx={{ p: 2, height: 350 }}
+          >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={inventoryByCategory}
@@ -231,7 +254,7 @@ const EmployeeDashboard = () => {
                 barCategoryGap="15%"
               >
                 <CartesianGrid
-                  stroke={theme.palette.grey[600]}
+                  stroke={theme.palette.neutral.mediumMain}
                   strokeDasharray="3 3"
                 />
                 <XAxis
@@ -271,11 +294,11 @@ const EmployeeDashboard = () => {
                 />
                 <Bar
                   dataKey="quantity"
-                  fill={theme.palette.teal[700]}
+                  fill={theme.palette.neutral.mediumMain}
                   radius={[4, 4, 0, 0]}
                   activeBar={{
                     fill: theme.palette.primary.main,
-                    backgroundColor: theme.palette.background.paper,
+                    backgroundColor: theme.palette.background.alt,
                   }}
                 />
               </BarChart>
@@ -289,7 +312,7 @@ const EmployeeDashboard = () => {
         <Typography variant="h5" fontWeight="bold" mb={2}>
           Recent Orders
         </Typography>
-        <Paper elevation={2} sx={{ p: 2, overflowX: "auto" }}>
+        <Paper elevation={1} sx={{ p: 2, overflowX: "auto" }}>
           <TableContainer>
             <Table>
               <TableHead>
@@ -305,7 +328,9 @@ const EmployeeDashboard = () => {
               </TableHead>
               <TableBody>
                 {recentOrders.map((order) => (
-                  <TableRow key={order.name}>
+                  <TableRow key={order.id}>
+                    {" "}
+                    {/* Fixed key to use order.id */}
                     <TableCell>{order.name}</TableCell>
                     <TableCell>{order.status}</TableCell>
                     <TableCell>{order.date}</TableCell>

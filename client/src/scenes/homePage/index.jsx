@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Box, useMediaQuery, Typography } from "@mui/material";
+import { Box, useMediaQuery, Typography, Button } from "@mui/material";
 import { useSelector } from "react-redux";
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
+import { Link } from "react-router-dom";
 import EmployeeDashboard from "./EmployeeDashboard";
 import SupplierDashboard from "./SupplierDashboard";
 
@@ -26,16 +27,27 @@ const HomePage = () => {
             padding: "2rem 6%",
           }}
         >
-          {/* Shared Welcome Message */}
-          <Box mb="2rem">
+          <Box
+            mb="2rem"
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <Typography
               variant="h1"
               color="text.primary"
               mb="1rem"
-              fontWeight={"semi-bold"}
+              fontWeight={"medium"}
             >
               Welcome, {firstName}!
             </Typography>
+            {role === "supplier" && (
+              <Link to="/addProduct">
+                <Button variant="outlined" size="large">
+                  Add Your Product
+                </Button>
+              </Link>
+            )}
           </Box>
 
           {/* Role-based dashboard */}
