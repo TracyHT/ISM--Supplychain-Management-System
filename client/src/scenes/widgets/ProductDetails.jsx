@@ -28,11 +28,11 @@ const ProductDetails = ({ productId, defaultStatus }) => {
   const { role, _id: loggedInUserId } = user || {};
 
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [selectedQuantity, setSelectedQuantity] = useState(0); // Initialize to 0, update in useEffect
   const [productDetails, setProductDetails] = useState(null);
   const [formState, setFormState] = useState({});
 
-  // Fetch product details
+  // Fetch product details and set selectedQuantity
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -43,20 +43,23 @@ const ProductDetails = ({ productId, defaultStatus }) => {
 
         if (response.status === 200) {
           setProductDetails(data);
-          setFormState({
+          const newFormState = {
             ...data,
             name: data.name || "",
             description: data.description || "",
             price: data.price || 0,
             quantity: data.quantity || 0,
             minQuantity: data.minQuantity || 0,
+            reorderPoint: data.reorderPoint || 0,
             maxQuantity: data.maxQuantity || 0,
             status: data.status || defaultStatus || "",
             category: data.category || "",
             bookings: data.bookings || {},
             orders: data.orders || [],
             imgUrl: data.imgUrl || "",
-          });
+          };
+          setFormState(newFormState);
+          setSelectedQuantity(Number(newFormState.minQuantity) || 1); // Set default to minQuantity
         } else {
           alert("Error fetching product details: " + data.message);
         }
@@ -70,6 +73,13 @@ const ProductDetails = ({ productId, defaultStatus }) => {
       fetchProduct();
     }
   }, [productId, defaultStatus]);
+
+  // Update selectedQuantity when minQuantity changes
+  useEffect(() => {
+    if (formState.minQuantity !== undefined) {
+      setSelectedQuantity(Number(formState.minQuantity) || 1);
+    }
+  }, [formState.minQuantity]);
 
   // Handle form input changes
   const handleChange = useCallback((field, value) => {
@@ -118,9 +128,12 @@ const ProductDetails = ({ productId, defaultStatus }) => {
 
   // Handle order placement and booking (Employee)
   const handleOrder = async () => {
-    if (selectedQuantity < 1 || selectedQuantity > formState.quantity) {
+    if (
+      selectedQuantity < formState.minQuantity ||
+      selectedQuantity > formState.quantity
+    ) {
       alert(
-        "Please select a valid quantity between 1 and " + formState.quantity
+        `Please select a valid quantity between ${formState.minQuantity} and ${formState.quantity}`
       );
       return;
     }
@@ -172,6 +185,7 @@ const ProductDetails = ({ productId, defaultStatus }) => {
       setProductDetails(updatedProduct);
       setFormState(updatedProduct);
       dispatch(setProduct({ product: updatedProduct }));
+      setSelectedQuantity(Number(updatedProduct.minQuantity) || 1); // Reset to minQuantity after booking
 
       alert("Order placed and product booked successfully!");
     } catch (error) {
@@ -190,7 +204,7 @@ const ProductDetails = ({ productId, defaultStatus }) => {
     price,
     quantity,
     minQuantity,
-
+    reorderPoint,
     maxQuantity,
     status,
     category,
@@ -199,7 +213,6 @@ const ProductDetails = ({ productId, defaultStatus }) => {
     imgUrl,
   } = formState;
 
-  const isBooked = Boolean(bookings[loggedInUserId]);
   const orderCount = orders.length;
 
   // Define fields with visibility and editability rules
@@ -214,14 +227,19 @@ const ProductDetails = ({ productId, defaultStatus }) => {
       label: "Minimum Quantity",
       key: "minQuantity",
       editable: role === "supplier",
+      visible: true,
+    },
+    {
+      label: "Reorder Point",
+      key: "reorderPoint",
+      editable: role === "supplier",
       visible: role === "supplier",
     },
-
     {
       label: "Maximum Quantity",
       key: "maxQuantity",
       editable: role === "supplier",
-      visible: role === "supplier",
+      visible: true,
     },
   ];
 
@@ -395,7 +413,7 @@ const ProductDetails = ({ productId, defaultStatus }) => {
               type="number"
               value={selectedQuantity}
               onChange={(e) => setSelectedQuantity(Number(e.target.value))}
-              inputProps={{ min: 1, max: quantity || Infinity }}
+              inputProps={{ min: minQuantity, max: quantity || Infinity }}
               sx={{
                 width: "100px",
                 backgroundColor: theme.palette.background.alt,

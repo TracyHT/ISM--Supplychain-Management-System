@@ -12,7 +12,7 @@ import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
 import User from "./models/User.js";
 import Product from "./models/Product.js";
-import { users, products } from "./data/index.js";
+import { products } from "./data/index.js";
 import { register } from "./controllers/auth.js";
 import { verifyToken } from "./middleware/auth.js";
 import { createProduct } from "./controllers/products.js";
@@ -69,6 +69,6 @@ mongoose
 
     /* ADD DATA ONE TIME*/
     // User.insertMany(users);
-    // Product.insertMany(products);
+    Product.insertMany(products);
   })
   .catch((error) => console.log(`${error} did not connect`));
