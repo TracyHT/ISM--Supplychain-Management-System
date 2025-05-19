@@ -137,11 +137,20 @@ export const updateOrderStatus = async (req, res) => {
       );
 
       // 🔄 Update supplier balance
-      const supplier = await User.findById(product.userId);
-      const employee = await User.findById(product.employeeId);
+      const supplier = await User.findById(order.supplierId);
+      const employee = await User.findById(order.employeeId);
+      console.log(`Employee id:${product.employeeId}`);
       if (!supplier) {
         return res.status(404).json({ message: "Supplier not found" });
       }
+      if (!employee) {
+        return res.status(404).json({ message: "Employee not found" });
+      }
+
+      console.log(
+        `Updating supplier balance for: ${supplier}, current balance: ${supplier.balance}`
+      );
+      console.log(`Updating employee balance for: ${employee}`);
 
       supplier.balance += pricePerUnit * quantity;
       employee.balance -= pricePerUnit * quantity;
