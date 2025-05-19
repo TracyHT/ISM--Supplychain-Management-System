@@ -2,7 +2,7 @@
 
 The **Supply Chain Management System** is a web-based application built using the **MERN stack** and **machine learning** to streamline supplier-employee interactions, inventory management, and demand forecasting.
 
-## ![Intelligent Supply Chain Management System](client/src/assets/loginImage.png)
+## ![Intelligent Supply Chain Management System](thumbnail.png)
 
 ## 📊 Core Modules
 
